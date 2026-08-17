@@ -51,11 +51,14 @@ const TaxProfile = {
 
   /** Embeds the bundled Australian tax reference library into the workspace. */
   seedKnowledge: async function (slug, entityType = null) {
-    return await fetch(`${API_BASE}/workspace/${slug}/tax-profile/seed-knowledge`, {
-      method: "POST",
-      body: JSON.stringify({ entityType }),
-      headers: baseHeaders(),
-    })
+    return await fetch(
+      `${API_BASE}/workspace/${slug}/tax-profile/seed-knowledge`,
+      {
+        method: "POST",
+        body: JSON.stringify({ entityType }),
+        headers: baseHeaders(),
+      }
+    )
       .then((res) => res.json())
       .catch((e) => ({ success: false, error: e.message }));
   },

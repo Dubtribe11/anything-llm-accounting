@@ -33,7 +33,7 @@ const BLANK_PROFILE = {
  * system prompt, the entity-specific guidance it follows, and the rate digest
  * it works from.
  */
-export default function TaxProfileSettings({ slug, workspace }) {
+export default function TaxProfileSettings({ slug }) {
   const [meta, setMeta] = useState(null);
   const [profile, setProfile] = useState(BLANK_PROFILE);
   const [enabled, setEnabled] = useState(false);
@@ -63,7 +63,8 @@ export default function TaxProfileSettings({ slug, workspace }) {
     if (slug) load();
   }, [slug]);
 
-  const update = (key, value) => setProfile((prev) => ({ ...prev, [key]: value }));
+  const update = (key, value) =>
+    setProfile((prev) => ({ ...prev, [key]: value }));
 
   async function handleSave(e) {
     e?.preventDefault();
@@ -83,7 +84,11 @@ export default function TaxProfileSettings({ slug, workspace }) {
   }
 
   async function handleRemove() {
-    if (!window.confirm("Remove the tax profile from this workspace? The workspace and its documents are not affected."))
+    if (
+      !window.confirm(
+        "Remove the tax profile from this workspace? The workspace and its documents are not affected."
+      )
+    )
       return;
     const success = await TaxProfile.delete(slug);
     if (success) {
@@ -120,30 +125,38 @@ export default function TaxProfileSettings({ slug, workspace }) {
   if (loading || !meta)
     return <div className="text-white/60 text-sm">Loading tax profile…</div>;
 
-  const entityTypeMeta = meta.entityTypes.find((e) => e.value === profile.entityType);
+  const entityTypeMeta = meta.entityTypes.find(
+    (e) => e.value === profile.entityType
+  );
 
   return (
-    <form onSubmit={handleSave} className="w-full max-w-3xl flex flex-col gap-y-8">
+    <form
+      onSubmit={handleSave}
+      className="w-full max-w-3xl flex flex-col gap-y-8"
+    >
       <div>
-        <h2 className="text-base font-semibold text-white">Australian tax profile</h2>
+        <h2 className="text-base font-semibold text-white">
+          Australian tax profile
+        </h2>
         <p className="text-white/60 text-xs mt-2 leading-relaxed">
-          Tell the assistant what kind of entity this workspace is for. The profile
-          shapes the system prompt with entity-specific guidance and a rate digest for
-          the income year in focus, and gives the tax calculators their defaults.
-          Create one workspace per entity - your individual return, the family trust,
-          the company - and switch between them like profiles.
+          Tell the assistant what kind of entity this workspace is for. The
+          profile shapes the system prompt with entity-specific guidance and a
+          rate digest for the income year in focus, and gives the tax
+          calculators their defaults. Create one workspace per entity - your
+          individual return, the family trust, the company - and switch between
+          them like profiles.
         </p>
         <p className="text-white/60 text-xs mt-2 leading-relaxed">
-          Memories you save are stored per user, and global memories carry across every
-          profile, so context you have already given the assistant follows you from one
-          entity to the next.
+          Memories you save are stored per user, and global memories carry
+          across every profile, so context you have already given the assistant
+          follows you from one entity to the next.
         </p>
       </div>
 
       {!enabled && (
         <div className="text-white/80 text-xs bg-theme-bg-primary border border-white/10 rounded-lg p-4">
-          No tax profile is attached to this workspace yet. Fill in the entity details
-          below and save to attach one.
+          No tax profile is attached to this workspace yet. Fill in the entity
+          details below and save to attach one.
         </div>
       )}
 
@@ -162,12 +175,18 @@ export default function TaxProfileSettings({ slug, workspace }) {
         <Select
           value={profile.entityType}
           onChange={(value) => update("entityType", value)}
-          options={meta.entityTypes.map((e) => ({ value: e.value, label: e.label }))}
+          options={meta.entityTypes.map((e) => ({
+            value: e.value,
+            label: e.label,
+          }))}
         />
       </Field>
 
       <div className="grid grid-cols-2 gap-6">
-        <Field label="Entity name" hint="How the assistant should refer to this entity.">
+        <Field
+          label="Entity name"
+          hint="How the assistant should refer to this entity."
+        >
           <Input
             value={profile.entityName}
             onChange={(value) => update("entityName", value)}
@@ -183,11 +202,17 @@ export default function TaxProfileSettings({ slug, workspace }) {
             onChange={(value) => update("financialYear", value)}
             options={[
               { value: "", label: `Current (${meta.lodgementFinancialYear})` },
-              ...meta.supportedFinancialYears.map((y) => ({ value: y, label: y })),
+              ...meta.supportedFinancialYears.map((y) => ({
+                value: y,
+                label: y,
+              })),
             ]}
           />
         </Field>
-        <Field label="ABN" hint="Checked against the ATO checksum when you save.">
+        <Field
+          label="ABN"
+          hint="Checked against the ATO checksum when you save."
+        >
           <Input
             value={profile.abn}
             onChange={(value) => update("abn", value)}
@@ -201,7 +226,10 @@ export default function TaxProfileSettings({ slug, workspace }) {
             placeholder="123 456 789"
           />
         </Field>
-        <Field label="State / territory" hint="Drives payroll tax, duty and land tax.">
+        <Field
+          label="State / territory"
+          hint="Drives payroll tax, duty and land tax."
+        >
           <Select
             value={profile.state}
             onChange={(value) => update("state", value)}
@@ -219,7 +247,9 @@ export default function TaxProfileSettings({ slug, workspace }) {
               { value: "", label: "Not set" },
               ...meta.residencyStatuses.map((s) => ({
                 value: s,
-                label: s.replace(/-/g, " ").replace(/^\w/, (c) => c.toUpperCase()),
+                label: s
+                  .replace(/-/g, " ")
+                  .replace(/^\w/, (c) => c.toUpperCase()),
               })),
             ]}
           />
@@ -232,7 +262,9 @@ export default function TaxProfileSettings({ slug, workspace }) {
               { value: "", label: "Not set" },
               ...meta.gstReportingCycles.map((c) => ({
                 value: c,
-                label: c.replace(/-/g, " ").replace(/^\w/, (ch) => ch.toUpperCase()),
+                label: c
+                  .replace(/-/g, " ")
+                  .replace(/^\w/, (ch) => ch.toUpperCase()),
               })),
             ]}
           />
@@ -307,11 +339,14 @@ export default function TaxProfileSettings({ slug, workspace }) {
 
       <div className="border-t border-white/10 pt-6 flex flex-col gap-y-4">
         <div>
-          <h3 className="text-sm font-semibold text-white">Reference library</h3>
+          <h3 className="text-sm font-semibold text-white">
+            Reference library
+          </h3>
           <p className="text-white/60 text-xs mt-1 leading-relaxed">
-            Embed the bundled Australian tax reference documents into this workspace so
-            the assistant can retrieve the detail behind the prompt's summary. This
-            needs an embedder configured and the document collector running.
+            Embed the bundled Australian tax reference documents into this
+            workspace so the assistant can retrieve the detail behind the
+            prompt's summary. This needs an embedder configured and the document
+            collector running.
             {knowledgeSeededAt && (
               <span className="block mt-1 text-white/40">
                 Last embedded {new Date(knowledgeSeededAt).toLocaleString()}.
@@ -326,7 +361,9 @@ export default function TaxProfileSettings({ slug, workspace }) {
           className="w-fit flex items-center gap-x-2 text-xs px-4 py-2 font-semibold rounded-lg bg-theme-bg-primary border border-white/20 text-white hover:bg-theme-bg-secondary disabled:opacity-50"
         >
           <Books className="h-4 w-4" />
-          {seeding ? "Embedding…" : "Embed the Australian tax reference library"}
+          {seeding
+            ? "Embedding…"
+            : "Embed the Australian tax reference library"}
         </button>
       </div>
 
@@ -364,7 +401,11 @@ export default function TaxProfileSettings({ slug, workspace }) {
 
       <div className="flex items-center gap-x-4">
         <CTAButton className="!mr-0" disabled={saving} onClick={handleSave}>
-          {saving ? "Saving…" : enabled ? "Update tax profile" : "Attach tax profile"}
+          {saving
+            ? "Saving…"
+            : enabled
+              ? "Update tax profile"
+              : "Attach tax profile"}
         </CTAButton>
         {enabled && (
           <button

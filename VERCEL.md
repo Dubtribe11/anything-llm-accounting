@@ -80,7 +80,14 @@ yarn db:use-postgres      # rewrites the Prisma datasource from SQLite to Postgr
 npx prisma generate
 npx prisma db push        # creates the schema
 cd frontend && yarn build # static assets to frontend/dist
+node scripts/vercel-restore-index.mjs
 ```
+
+That last step exists because the normal frontend build renames `index.html` to
+`_index.html` so the Express server can inject meta tags at request time. On
+Vercel the SPA is served straight from the CDN and only `/api/*` reaches the
+function, so it needs a real `index.html`. The trade-off is that custom branding
+meta tags are not injected per-request on Vercel; the page itself is complete.
 
 Then open the deployment and create the first admin account.
 
