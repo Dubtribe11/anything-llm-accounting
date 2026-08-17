@@ -22,6 +22,15 @@ function relayToSocket(message) {
 
 function agentWebsocket(app) {
   if (!app) return;
+  // express-ws is not loaded on serverless platforms (they cannot hold a socket
+  // open), so `app.ws` is undefined there. Skip rather than crash at boot -
+  // agent invocation over websockets is documented as unavailable on Vercel.
+  if (typeof app.ws !== "function") {
+    console.log(
+      "\x1b[33m[agentWebsocket]\x1b[0m Websockets are unavailable in this runtime - agent invocation over websockets is disabled."
+    );
+    return;
+  }
 
   app.ws("/agent-invocation/:uuid", async function (socket, request) {
     try {

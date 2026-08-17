@@ -2,14 +2,14 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Uncomment the following lines and comment out the SQLite datasource block above to use PostgreSQL
-// Make sure to set the correct DATABASE_URL in your .env file
-// After swapping run `yarn prisma:setup` from the root directory to migrate the database
+// SQLite is the default and is what a local or Docker install uses.
 //
-// datasource db {
-//   provider = "postgresql"
-//   url      = env("DATABASE_URL")
-// }
+// To use PostgreSQL instead (required for serverless deployments - see
+// VERCEL.md), run `yarn db:use-postgres` from the repository root. That script
+// rewrites the datasource block below and is reversible with `yarn db:use-sqlite`.
+// Set DATABASE_URL in the environment, then create the schema with
+// `npx prisma db push` - the migrations in ./migrations are SQLite-flavoured
+// and will not run on Postgres.
 datasource db {
   provider = "sqlite"
   url      = "file:../storage/anythingllm.db"

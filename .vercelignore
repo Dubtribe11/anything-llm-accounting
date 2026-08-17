@@ -1,0 +1,44 @@
+# Keep the serverless bundle under Vercel's size limit.
+#
+# The function only needs /server and /api. Everything below is either a
+# different deployment target, a build artefact, or a native dependency that
+# cannot run in a serverless runtime anyway (see VERCEL.md).
+
+# Other deployment targets and tooling
+docker/
+cloud-deployments/
+browser-extension/
+open-computer/
+extras/
+images/
+locales/
+embed/
+
+# The collector runs as its own service - it is not part of the Vercel function
+collector/hotdir/
+collector/outputs/
+collector/storage/
+
+# Local data
+server/storage/
+server/logs/
+**/.env
+**/.env.development
+**/.env.production
+
+# Native dependencies that cannot run in a serverless function.
+# The native embedder and LanceDB are unavailable on Vercel - use an API-based
+# embedder (OpenRouter, OpenAI, Cohere) and an external vector database.
+server/node_modules/onnxruntime-node/
+server/node_modules/@lancedb/
+server/node_modules/vectordb/
+server/node_modules/@xenova/
+server/node_modules/sharp/
+server/node_modules/puppeteer/
+server/node_modules/@aws-sdk/
+server/node_modules/.cache/
+
+# Test and doc noise
+**/__tests__/
+**/*.test.js
+**/coverage/

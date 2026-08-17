@@ -48,10 +48,24 @@ class CollectorApi {
     return this.DEFAULT_COLLECTOR_PORT;
   }
 
+  /**
+   * The base URL of the collector service.
+   *
+   * Normally the collector runs alongside the server on localhost. On a
+   * serverless platform there is no localhost sibling process, so
+   * COLLECTOR_ENDPOINT points at a collector deployed elsewhere.
+   * @returns {string}
+   */
+  static getCollectorEndpoint() {
+    const configured = process.env.COLLECTOR_ENDPOINT?.trim();
+    if (configured) return configured.replace(/\/+$/, "");
+    return `http://0.0.0.0:${CollectorApi.getCollectorPort()}`;
+  }
+
   constructor() {
     const { CommunicationKey } = require("../comKey");
     this.comkey = new CommunicationKey();
-    this.endpoint = `http://0.0.0.0:${CollectorApi.getCollectorPort()}`;
+    this.endpoint = CollectorApi.getCollectorEndpoint();
   }
 
   log(text, ...args) {
