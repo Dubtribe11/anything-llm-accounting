@@ -47,7 +47,9 @@ git clone https://github.com/Dubtribe11/anything-llm-accounting.git
 cd anything-llm-accounting
 
 cp .env.example .env
-# edit .env: paste the three secrets and your OPENROUTER_API_KEY
+# edit .env: paste the three secrets.
+# Then either uncomment and fill in the OpenRouter lines, or leave them
+# commented out and set the provider in the UI on first run - both work.
 
 docker compose up -d --build
 ```
@@ -204,7 +206,18 @@ URL is an admin.
 
 ## Configuration you might change
 
-Everything is in `.env` (or the platform's environment variables).
+Everything is in `.env` (or the platform's environment variables), or in the UI
+under **Settings**.
+
+> **Set each thing in one place.** A variable set in `.env` or in the platform's
+> environment always wins over the same one set in the UI — including when its
+> value is empty. `OPENROUTER_API_KEY=""` will permanently shadow the key you
+> type into the UI. Uncomment and fill a line in, or leave it commented out
+> entirely; never leave one blank.
+>
+> Settings you change in the UI are written to `.env` inside the container. That
+> file is kept on the storage volume and symlinked back, so those changes
+> survive a redeploy — but only if a volume is mounted at `STORAGE_DIR`.
 
 **A different model** — any OpenRouter model id:
 ```
@@ -249,6 +262,10 @@ Railway instructions.
 
 **Documents fail to upload.** That is the collector process. `docker compose
 logs -f` will show it; the tax calculators and profiles do not depend on it.
+
+**The API key you set in the UI seems to be ignored.** The same variable is set
+— probably to an empty value — in `.env` or in the platform's environment, and
+that always wins. Remove or comment out the line there, then restart.
 
 ---
 

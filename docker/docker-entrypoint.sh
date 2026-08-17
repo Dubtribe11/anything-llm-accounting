@@ -16,6 +16,24 @@ if [ -z "$STORAGE_DIR" ]; then
     echo "================================================================"
 fi
 
+# Keep settings changed in the UI across redeploys.
+#
+# Saving a setting in the UI writes to /app/server/.env, which lives in the
+# container's ephemeral filesystem. On a managed platform (Railway, Fly, Render)
+# that means the API key you typed into the UI is gone on the next deploy. Move
+# the real file onto the persistent volume and symlink to it.
+#
+# Skipped when .env is already bind-mounted from the host - that host file is
+# the source of truth and must not be replaced.
+if [ -n "$STORAGE_DIR" ] && ! grep -q " /app/server/.env " /proc/mounts 2>/dev/null; then
+  if [ ! -e "$STORAGE_DIR/.env" ]; then
+    mkdir -p "$STORAGE_DIR"
+    cp /app/server/.env "$STORAGE_DIR/.env" 2>/dev/null || touch "$STORAGE_DIR/.env"
+  fi
+  ln -sf "$STORAGE_DIR/.env" /app/server/.env
+  echo "[entrypoint] Settings file linked to $STORAGE_DIR/.env so UI changes survive a redeploy."
+fi
+
 {
   cd /app/server/ &&
     # Disable Prisma CLI telemetry (https://www.prisma.io/docs/orm/tools/prisma-cli#how-to-opt-out-of-data-collection)
