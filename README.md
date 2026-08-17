@@ -1,5 +1,24 @@
 <a name="readme-top"></a>
 
+> [!IMPORTANT]
+> **This is a fork of AnythingLLM set up for Australian tax accounting.**
+>
+> It adds Australian tax knowledge out of the box, deterministic calculators the
+> model calls instead of doing arithmetic from memory, per-entity tax profiles
+> (individual / sole trader / company / trust / partnership / SMSF) with memory
+> that carries across them, and a Vercel deployment path. OpenRouter is
+> supported for chat, embeddings and image generation.
+>
+> **Deploy it: [DEPLOYMENT.md](./DEPLOYMENT.md)** — `cp .env.example .env &&
+> docker compose up -d --build`, or one-file configs for Railway, Fly.io and
+> Render.
+>
+> **What it does: [AUSTRALIAN_TAX.md](./AUSTRALIAN_TAX.md)** · Reduced serverless
+> path: [VERCEL.md](./VERCEL.md)
+>
+> Everything below is the upstream AnythingLLM README and still applies.
+
+
 > [!NOTE]
 > We are also working on [Open Computer](/open-computer) which gives an entire computer environment for AI Agents to use.
 >

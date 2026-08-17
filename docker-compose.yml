@@ -1,0 +1,52 @@
+# Turnkey deployment for the Australian tax accounting build.
+#
+#   cp .env.example .env     # then fill in OPENROUTER_API_KEY and the secrets
+#   docker compose up -d --build
+#   open http://localhost:3001
+#
+# This is the full-featured path: a long-running container with a persistent
+# volume, so agents, websockets, background jobs, document upload and the local
+# vector store all work. (docker/docker-compose.yml is upstream's development
+# compose file and mounts the repo directly; this one is for deploying.)
+name: anythingllm-autax
+
+services:
+  anythingllm:
+    container_name: anythingllm-autax
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+      args:
+        ARG_UID: ${UID:-1000}
+        ARG_GID: ${GID:-1000}
+    restart: unless-stopped
+    # Required for the document collector's headless Chromium sandbox.
+    cap_add:
+      - SYS_ADMIN
+    user: "${UID:-1000}:${GID:-1000}"
+    ports:
+      - "${PORT:-3001}:3001"
+    env_file:
+      - .env
+    environment:
+      # Everything that must survive a restart lives here: the SQLite database,
+      # uploaded documents, the LanceDB vector store, and the encryption keys.
+      STORAGE_DIR: /app/server/storage
+    volumes:
+      - anythingllm_storage:/app/server/storage
+      - anythingllm_hotdir:/app/collector/hotdir
+      - anythingllm_outputs:/app/collector/outputs
+    healthcheck:
+      test: ["CMD", "/bin/bash", "/usr/local/bin/docker-healthcheck.sh"]
+      interval: 1m
+      timeout: 10s
+      start_period: 2m
+      retries: 3
+    extra_hosts:
+      # Lets the container reach a model server running on the host, e.g. Ollama.
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  anythingllm_storage:
+  anythingllm_hotdir:
+  anythingllm_outputs:

@@ -2,14 +2,14 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Uncomment the following lines and comment out the SQLite datasource block above to use PostgreSQL
-// Make sure to set the correct DATABASE_URL in your .env file
-// After swapping run `yarn prisma:setup` from the root directory to migrate the database
+// SQLite is the default and is what a local or Docker install uses.
 //
-// datasource db {
-//   provider = "postgresql"
-//   url      = env("DATABASE_URL")
-// }
+// To use PostgreSQL instead (required for serverless deployments - see
+// VERCEL.md), run `yarn db:use-postgres` from the repository root. That script
+// rewrites the datasource block below and is reversible with `yarn db:use-sqlite`.
+// Set DATABASE_URL in the environment, then create the schema with
+// `npx prisma db push` - the migrations in ./migrations are SQLite-flavoured
+// and will not run on Postgres.
 datasource db {
   provider = "sqlite"
   url      = "file:../storage/anythingllm.db"
@@ -149,6 +149,39 @@ model workspaces {
   prompt_history               prompt_history[]
   workspace_parsed_files       workspace_parsed_files[]
   memories                     memories[]
+  tax_profile                  tax_profiles?
+}
+
+/// An Australian tax profile attached to a workspace. The workspace is the
+/// "profile" a user switches between (individual, trust, company, SMSF...);
+/// this table holds the entity facts that shape the system prompt and supply
+/// defaults to the tax calculators.
+model tax_profiles {
+  id                 Int       @id @default(autoincrement())
+  workspace_id       Int       @unique
+  entityType         String    @default("individual") @map("entity_type")
+  entityName         String?   @map("entity_name")
+  abn                String?
+  acn                String?
+  financialYear      String?   @map("financial_year")
+  state              String?
+  residencyStatus    String?   @map("residency_status")
+  gstRegistered      Boolean   @default(false) @map("gst_registered")
+  gstReportingCycle  String?   @map("gst_reporting_cycle")
+  accountingBasis    String?   @map("accounting_basis")
+  hasEmployees       Boolean   @default(false) @map("has_employees")
+  industry           String?
+  accountingSoftware String?   @map("accounting_software")
+  notes              String?
+  applySystemPrompt  Boolean   @default(true) @map("apply_system_prompt")
+  includeRateDigest  Boolean   @default(true) @map("include_rate_digest")
+  knowledgeSeededAt  DateTime? @map("knowledge_seeded_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  lastUpdatedAt      DateTime  @default(now()) @map("last_updated_at")
+
+  workspace workspaces @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@index([entityType])
 }
 
 model workspace_threads {

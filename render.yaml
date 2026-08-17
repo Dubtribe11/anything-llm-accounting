@@ -1,0 +1,55 @@
+# Render blueprint for the Australian tax accounting build.
+#
+# In the Render dashboard: New -> Blueprint, point it at this repository.
+# Render reads this file, builds the Docker image and attaches the disk.
+# Then set OPENROUTER_API_KEY in the service's Environment tab.
+#
+# Full features: a persistent disk, a long-running process and websockets, so
+# agents, background jobs, document upload and the local vector store all work.
+services:
+  - type: web
+    name: anythingllm-autax
+    runtime: image
+    plan: standard # 2GB RAM - the native embedder needs headroom
+    region: singapore # closest Render region to Australia
+    dockerfilePath: ./docker/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/ping
+    autoDeploy: false
+
+    # The database, documents, vectors and encryption keys all live here.
+    disk:
+      name: anythingllm-storage
+      mountPath: /app/server/storage
+      sizeGB: 10
+
+    envVars:
+      - key: STORAGE_DIR
+        value: /app/server/storage
+      - key: SERVER_PORT
+        value: 3001
+      # First boot creates a workspace per entity type with a tax profile.
+      - key: AU_TAX_AUTOSEED
+        value: "true"
+      - key: DISABLE_TELEMETRY
+        value: "true"
+      - key: LLM_PROVIDER
+        value: openrouter
+      - key: OPENROUTER_MODEL_PREF
+        value: anthropic/claude-sonnet-4.5
+      # Runs in-container, no API key, nothing leaves the machine to be embedded.
+      - key: EMBEDDING_ENGINE
+        value: native
+      - key: VECTOR_DB
+        value: lancedb
+      # Generated once by Render and then kept - do not change them later or
+      # existing encrypted values become unreadable.
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SIG_KEY
+        generateValue: true
+      - key: SIG_SALT
+        generateValue: true
+      # Set this yourself in the dashboard.
+      - key: OPENROUTER_API_KEY
+        sync: false

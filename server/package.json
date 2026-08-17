@@ -14,7 +14,8 @@
     "start": "cross-env NODE_ENV=production node index.js",
     "lint": "eslint --fix .",
     "lint:check": "eslint .",
-    "swagger": "node ./swagger/init.js"
+    "swagger": "node ./swagger/init.js",
+    "tax:seed": "node ./scripts/seed-tax-profiles.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

@@ -5,6 +5,7 @@ const { generateImage } = require("./commands/img");
 const { convertToPromptHistory } = require("../helpers/chat/responses");
 const { SlashCommandPresets } = require("../../models/slashCommandsPresets");
 const { SystemPromptVariables } = require("../../models/systemPromptVariables");
+const { basePromptForWorkspace } = require("../AustralianTax/workspacePrompt");
 
 const VALID_COMMANDS = {
   "/reset": resetMemory,
@@ -98,10 +99,8 @@ async function recentChatHistory({
  * @returns {Promise<string>}
  */
 async function chatPrompt(workspace, user = null, opts = {}) {
-  const { SystemSettings } = require("../../models/systemSettings");
   const { promptWithMemories } = require("../memories");
-  const basePrompt =
-    workspace?.openAiPrompt ?? SystemSettings.saneDefaultSystemPrompt;
+  const basePrompt = await basePromptForWorkspace(workspace);
   const systemPrompt = await SystemPromptVariables.expandSystemPromptVariables(
     basePrompt,
     user?.id,
@@ -129,6 +128,7 @@ function sourceIdentifier(sourceDocument) {
 module.exports = {
   sourceIdentifier,
   recentChatHistory,
+  basePromptForWorkspace,
   chatPrompt,
   grepCommand,
   grepAllSlashCommands,

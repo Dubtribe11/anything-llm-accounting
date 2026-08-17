@@ -22,6 +22,7 @@ const { utilEndpoints } = require("./endpoints/utils");
 const { developerEndpoints } = require("./endpoints/api");
 const { extensionEndpoints } = require("./endpoints/extensions");
 const { bootHTTP, bootSSL } = require("./utils/boot");
+const { serverlessBootMiddleware } = require("./utils/boot/serverless");
 const { workspaceThreadEndpoints } = require("./endpoints/workspaceThreads");
 const { documentEndpoints } = require("./endpoints/document");
 const { agentWebsocket } = require("./endpoints/agentWebsocket");
@@ -45,6 +46,7 @@ const {
   googleAgentSkillEndpoints,
 } = require("./endpoints/utils/googleAgentSkillEndpoints");
 const { memoryEndpoints } = require("./endpoints/memory");
+const { taxProfileEndpoints } = require("./endpoints/taxProfiles");
 const { httpLogger } = require("./middleware/httpLogger");
 const app = express();
 const apiRouter = express.Router();
@@ -71,7 +73,14 @@ app.use(
   })
 );
 
-if (!!process.env.ENABLE_HTTPS) {
+// On a serverless platform (Vercel) the runtime owns the socket: the app must
+// not listen, and websockets are unavailable, so agent chat over `@agent` will
+// not work there. See VERCEL.md.
+const SERVERLESS = process.env.SERVERLESS_DEPLOYMENT === "true";
+
+if (SERVERLESS) {
+  app.use(serverlessBootMiddleware);
+} else if (!!process.env.ENABLE_HTTPS) {
   bootSSL(app, process.env.SERVER_PORT || 3001);
 } else {
   require("@mintplex-labs/express-ws").default(app); // load WebSockets in non-SSL mode.
@@ -104,6 +113,7 @@ scheduledJobEndpoints(apiRouter);
 outlookAgentEndpoints(apiRouter);
 googleAgentSkillEndpoints(apiRouter);
 memoryEndpoints(apiRouter);
+taxProfileEndpoints(apiRouter);
 // Externally facing embedder endpoints
 embeddedEndpoints(apiRouter);
 
@@ -176,4 +186,9 @@ app.all("*", function (_, response) {
 
 // In non-https mode we need to boot at the end since the server has not yet
 // started and is `.listen`ing.
-if (!process.env.ENABLE_HTTPS) bootHTTP(app, process.env.SERVER_PORT || 3001);
+if (!SERVERLESS && !process.env.ENABLE_HTTPS)
+  bootHTTP(app, process.env.SERVER_PORT || 3001);
+
+// Exported so a serverless entry point can hand the platform the request
+// handler. Requiring this file still boots a normal server when not serverless.
+module.exports = app;

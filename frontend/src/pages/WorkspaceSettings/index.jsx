@@ -9,6 +9,7 @@ import {
   ArrowUUpLeft,
   ChatText,
   Database,
+  Receipt,
   Robot,
   User,
   Wrench,
@@ -21,6 +22,7 @@ import ChatSettings from "./ChatSettings";
 import VectorDatabase from "./VectorDatabase";
 import Members from "./Members";
 import WorkspaceAgentConfiguration from "./AgentConfig";
+import TaxProfileSettings from "./TaxProfile";
 import useUser from "@/hooks/useUser";
 import { useTranslation } from "react-i18next";
 import System from "@/models/system";
@@ -31,6 +33,7 @@ const TABS = {
   "vector-database": VectorDatabase,
   members: Members,
   "agent-config": WorkspaceAgentConfiguration,
+  "tax-profile": TaxProfileSettings,
 };
 
 export default function WorkspaceSettings() {
@@ -116,6 +119,11 @@ function ShowWorkspaceChat() {
             title={t("workspaces—settings.agent")}
             icon={<Robot className="h-6 w-6" />}
             to={paths.workspace.settings.agentConfig(slug)}
+          />
+          <TabItem
+            title="Tax Profile"
+            icon={<Receipt className="h-6 w-6" />}
+            to={paths.workspace.settings.taxProfile(slug)}
           />
         </div>
         <div className="px-16 py-6">
