@@ -11,6 +11,9 @@ const DEFAULT_SKILLS = [
   AgentPlugins.memory.name,
   AgentPlugins.docSummarizer.name,
   AgentPlugins.webScraping.name,
+  // The Australian tax calculators are the point of this build - they are on by
+  // default so a fresh install computes figures instead of recalling them.
+  AgentPlugins.auTax.name,
 ];
 
 // Skills that must never be injected when the instance is running in multi-user mode.

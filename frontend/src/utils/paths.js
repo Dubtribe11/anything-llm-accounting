@@ -95,6 +95,9 @@ export default {
       agentConfig: (slug) => {
         return `/workspace/${slug}/settings/agent-config`;
       },
+      taxProfile: (slug) => {
+        return `/workspace/${slug}/settings/tax-profile`;
+      },
     },
     thread: (wsSlug, threadSlug) => {
       return `/workspace/${wsSlug}/t/${threadSlug}`;

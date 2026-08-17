@@ -752,10 +752,16 @@ const SystemSettings = {
     }
   },
 
+  /**
+   * Memories are ON by default in this build. Global-scoped memories are what
+   * carries a user's context across tax profiles (one workspace per entity), so
+   * an install that has never touched the setting should already have them.
+   * An explicit "false" still turns them off.
+   */
   memoriesEnabled: async function () {
     try {
       const setting = await this.get({ label: "memory_enabled" });
-      return setting?.value === "true";
+      return setting ? setting.value === "true" : true;
     } catch (error) {
       console.error(error.message);
       return false;

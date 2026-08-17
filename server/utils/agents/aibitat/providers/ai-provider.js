@@ -536,10 +536,13 @@ class Provider {
    * @returns {Promise<string>}
    */
   static async systemPrompt({ workspace = null, user = null, prompt = "" }) {
-    const { SystemSettings } = require("../../../../models/systemSettings");
     const { promptWithMemories } = require("../../../memories");
-    const basePrompt =
-      workspace?.openAiPrompt ?? SystemSettings.saneDefaultSystemPrompt;
+    const {
+      basePromptForWorkspace,
+    } = require("../../../AustralianTax/workspacePrompt");
+    // Shared with the chat handlers so an agent run and a normal chat see the
+    // same tax profile prompt for a workspace.
+    const basePrompt = await basePromptForWorkspace(workspace);
     const systemPrompt =
       await SystemPromptVariables.expandSystemPromptVariables(
         basePrompt,
