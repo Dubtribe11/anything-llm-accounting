@@ -41,7 +41,10 @@ function ensureStorageDirectories() {
     try {
       if (!fs.existsSync(target)) fs.mkdirSync(target, { recursive: true });
     } catch (error) {
-      console.error(`[serverless boot] Could not create ${target}:`, error.message);
+      console.error(
+        `[serverless boot] Could not create ${target}:`,
+        error.message
+      );
     }
   }
 }

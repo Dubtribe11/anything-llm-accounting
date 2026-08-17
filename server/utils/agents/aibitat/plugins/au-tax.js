@@ -93,8 +93,12 @@ const auTax = {
 
               // Models pass the argument object as a string, an already-parsed
               // object, or occasionally a JSON string wrapped in one more layer.
-              let parsed = typeof args === "object" && args !== null ? args : safeJsonParse(args, null);
-              if (typeof parsed === "string") parsed = safeJsonParse(parsed, null);
+              let parsed =
+                typeof args === "object" && args !== null
+                  ? args
+                  : safeJsonParse(args, null);
+              if (typeof parsed === "string")
+                parsed = safeJsonParse(parsed, null);
               if (parsed === null) {
                 this.super.introspect(
                   `${this.caller}: could not parse the arguments for ${calculator}.`

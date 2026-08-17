@@ -5,9 +5,7 @@ const { generateImage } = require("./commands/img");
 const { convertToPromptHistory } = require("../helpers/chat/responses");
 const { SlashCommandPresets } = require("../../models/slashCommandsPresets");
 const { SystemPromptVariables } = require("../../models/systemPromptVariables");
-const {
-  basePromptForWorkspace,
-} = require("../AustralianTax/workspacePrompt");
+const { basePromptForWorkspace } = require("../AustralianTax/workspacePrompt");
 
 const VALID_COMMANDS = {
   "/reset": resetMemory,

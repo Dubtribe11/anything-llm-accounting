@@ -20,7 +20,10 @@ const { calculateIndividualTax } = require("./individual");
  * @param {object} rates
  */
 function minorEligibleIncomeTax(eligibleIncome, rates) {
-  const result = applyBrackets(eligibleIncome, rates.individual.minorUnearnedIncome);
+  const result = applyBrackets(
+    eligibleIncome,
+    rates.individual.minorUnearnedIncome
+  );
   return {
     eligibleIncome: round2(eligibleIncome),
     tax: result.tax,
@@ -52,16 +55,28 @@ function calculateTrustDistribution(input = {}) {
   const c = input.components ?? {};
 
   const ordinaryIncome = toAmount(c.ordinaryIncome, "ordinaryIncome");
-  const frankedDistributions = toAmount(c.frankedDistributions, "frankedDistributions");
+  const frankedDistributions = toAmount(
+    c.frankedDistributions,
+    "frankedDistributions"
+  );
   const frankingCredits = toAmount(c.frankingCredits, "frankingCredits");
   const grossCapitalGains = toAmount(c.grossCapitalGains, "grossCapitalGains");
-  const capitalLossesApplied = toAmount(c.capitalLossesApplied, "capitalLossesApplied");
+  const capitalLossesApplied = toAmount(
+    c.capitalLossesApplied,
+    "capitalLossesApplied"
+  );
   const foreignIncome = toAmount(c.foreignIncome, "foreignIncome");
-  const foreignIncomeTaxOffsets = toAmount(c.foreignIncomeTaxOffsets, "foreignIncomeTaxOffsets");
+  const foreignIncomeTaxOffsets = toAmount(
+    c.foreignIncomeTaxOffsets,
+    "foreignIncomeTaxOffsets"
+  );
   const deductions = toAmount(c.deductions, "deductions");
   const discountEligible = toBool(c.capitalGainsDiscountEligible, true);
 
-  const gainsAfterLosses = Math.max(0, grossCapitalGains - capitalLossesApplied);
+  const gainsAfterLosses = Math.max(
+    0,
+    grossCapitalGains - capitalLossesApplied
+  );
   const discountAmount = discountEligible
     ? round2(gainsAfterLosses * rates.cgt.trustDiscount)
     : 0;
@@ -80,7 +95,9 @@ function calculateTrustDistribution(input = {}) {
       ? round2(toAmount(input.trustNetIncome, "trustNetIncome"))
       : derivedNetIncome;
 
-  const beneficiaries = Array.isArray(input.beneficiaries) ? input.beneficiaries : [];
+  const beneficiaries = Array.isArray(input.beneficiaries)
+    ? input.beneficiaries
+    : [];
   const results = [];
   let distributedTotal = 0;
 
@@ -94,8 +111,14 @@ function calculateTrustDistribution(input = {}) {
         ? toAmount(b.shareAmount, "shareAmount")
         : null;
 
-    const streamedFranked = toAmount(b.streamedFrankedDistributions, "streamedFrankedDistributions");
-    const streamedGains = toAmount(b.streamedCapitalGains, "streamedCapitalGains");
+    const streamedFranked = toAmount(
+      b.streamedFrankedDistributions,
+      "streamedFrankedDistributions"
+    );
+    const streamedGains = toAmount(
+      b.streamedCapitalGains,
+      "streamedCapitalGains"
+    );
 
     // Franking credits follow the streamed franked distribution proportionally.
     const streamedCredits =
@@ -153,7 +176,10 @@ function calculateTrustDistribution(input = {}) {
         rateAssumed: rate,
         note: "Assumes the corporate beneficiary is a base rate entity. An unpaid present entitlement to a corporate beneficiary can trigger Division 7A - see TD 2022/11.",
       };
-    } else if (entry.entityType === "smsf" || entry.entityType === "super-fund") {
+    } else if (
+      entry.entityType === "smsf" ||
+      entry.entityType === "super-fund"
+    ) {
       entry.estimatedTax = round2(share * rates.smsf.accumulationRate);
       entry.estimatedTaxDetail = {
         rateAssumed: rates.smsf.accumulationRate,
@@ -191,7 +217,8 @@ function calculateTrustDistribution(input = {}) {
     financialYear: rates.financialYear,
     netIncome: {
       trustNetIncome,
-      derivedFromComponents: input.trustNetIncome === undefined || input.trustNetIncome === null,
+      derivedFromComponents:
+        input.trustNetIncome === undefined || input.trustNetIncome === null,
       components: {
         ordinaryIncome: round2(ordinaryIncome),
         frankedDistributions: round2(frankedDistributions),

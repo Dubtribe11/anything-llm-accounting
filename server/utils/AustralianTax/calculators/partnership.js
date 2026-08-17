@@ -24,7 +24,8 @@ function calculatePartnershipDistribution(input = {}) {
   const assessableIncome = toAmount(input.assessableIncome, "assessableIncome");
   const deductions = toAmount(input.deductions, "deductions");
   const netIncome =
-    input.partnershipNetIncome !== undefined && input.partnershipNetIncome !== null
+    input.partnershipNetIncome !== undefined &&
+    input.partnershipNetIncome !== null
       ? round2(toAmount(input.partnershipNetIncome, "partnershipNetIncome"))
       : round2(assessableIncome - deductions);
 
@@ -53,7 +54,9 @@ function calculatePartnershipDistribution(input = {}) {
       entry.estimatedTaxOnTotalIncome = estimate.totals.totalTaxLiability;
       entry.marginalRate = estimate.totals.marginalRate;
     } else if (entry.entityType === "company") {
-      entry.estimatedTax = round2(Math.max(0, share) * rates.company.baseRateEntityRate);
+      entry.estimatedTax = round2(
+        Math.max(0, share) * rates.company.baseRateEntityRate
+      );
     }
 
     results.push(entry);

@@ -62,7 +62,8 @@ function taxProfileEndpoints(app) {
           profiles: profiles.map((profile) => ({
             ...profile,
             abn: TaxProfile.formatAbn(profile.abn),
-            entityTypeLabel: ENTITY_TYPES[profile.entityType]?.label ?? profile.entityType,
+            entityTypeLabel:
+              ENTITY_TYPES[profile.entityType]?.label ?? profile.entityType,
           })),
         });
       } catch (e) {
@@ -85,7 +86,10 @@ function taxProfileEndpoints(app) {
             : null,
           // Show the caller what the composed prompt will look like so the
           // effect of the profile is never a black box.
-          composedSystemPrompt: TaxProfile.systemPromptFor(profile, workspace.openAiPrompt),
+          composedSystemPrompt: TaxProfile.systemPromptFor(
+            profile,
+            workspace.openAiPrompt
+          ),
         });
       } catch (e) {
         console.error(e.message, e);
@@ -96,12 +100,19 @@ function taxProfileEndpoints(app) {
 
   app.post(
     "/workspace/:slug/tax-profile",
-    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager]), validWorkspaceSlug],
+    [
+      validatedRequest,
+      flexUserRoleValid([ROLES.admin, ROLES.manager]),
+      validWorkspaceSlug,
+    ],
     async (request, response) => {
       try {
         const workspace = response.locals.workspace;
         const updates = reqBody(request);
-        const { profile, error } = await TaxProfile.upsert(workspace.id, updates);
+        const { profile, error } = await TaxProfile.upsert(
+          workspace.id,
+          updates
+        );
         if (error) return response.status(500).json({ profile: null, error });
 
         const warnings = [];
@@ -118,7 +129,10 @@ function taxProfileEndpoints(app) {
 
         response.status(200).json({
           profile: { ...profile, abn: TaxProfile.formatAbn(profile.abn) },
-          composedSystemPrompt: TaxProfile.systemPromptFor(profile, workspace.openAiPrompt),
+          composedSystemPrompt: TaxProfile.systemPromptFor(
+            profile,
+            workspace.openAiPrompt
+          ),
           warnings,
           error: null,
         });
@@ -131,7 +145,11 @@ function taxProfileEndpoints(app) {
 
   app.delete(
     "/workspace/:slug/tax-profile",
-    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager]), validWorkspaceSlug],
+    [
+      validatedRequest,
+      flexUserRoleValid([ROLES.admin, ROLES.manager]),
+      validWorkspaceSlug,
+    ],
     async (_request, response) => {
       try {
         const workspace = response.locals.workspace;
@@ -150,7 +168,11 @@ function taxProfileEndpoints(app) {
    */
   app.post(
     "/workspace/:slug/tax-profile/seed-knowledge",
-    [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager]), validWorkspaceSlug],
+    [
+      validatedRequest,
+      flexUserRoleValid([ROLES.admin, ROLES.manager]),
+      validWorkspaceSlug,
+    ],
     async (request, response) => {
       try {
         const workspace = response.locals.workspace;
@@ -174,17 +196,21 @@ function taxProfileEndpoints(app) {
         const failures = [];
 
         for (const doc of documents) {
-          const { success, reason, documents: created } = await collector.processRawText(
-            doc.content,
-            {
-              title: doc.title,
-              docAuthor: "AnythingLLM Australian Tax Library",
-              description: doc.description,
-              docSource: "Bundled Australian tax reference library",
-            }
-          );
+          const {
+            success,
+            reason,
+            documents: created,
+          } = await collector.processRawText(doc.content, {
+            title: doc.title,
+            docAuthor: "AnythingLLM Australian Tax Library",
+            description: doc.description,
+            docSource: "Bundled Australian tax reference library",
+          });
           if (!success || !created?.[0]?.location) {
-            failures.push({ title: doc.title, reason: reason ?? "Unknown error" });
+            failures.push({
+              title: doc.title,
+              reason: reason ?? "Unknown error",
+            });
             continue;
           }
           locations.push(created[0].location);
@@ -250,7 +276,9 @@ function taxProfileEndpoints(app) {
     [validatedRequest, flexUserRoleValid([ROLES.all])],
     async (request, response) => {
       try {
-        const rates = AustralianTax.ratesFor(request.params.financialYear ?? null);
+        const rates = AustralianTax.ratesFor(
+          request.params.financialYear ?? null
+        );
         response.status(200).json({
           rates,
           supportedFinancialYears: AustralianTax.SUPPORTED_YEARS,

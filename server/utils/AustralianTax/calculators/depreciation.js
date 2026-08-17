@@ -1,9 +1,19 @@
 /**
  * Capital allowances (Division 40) and capital works (Division 43).
  */
-const { ratesFor, normalizeFinancialYear, COMMON_EFFECTIVE_LIVES, CAPITAL_WORKS_RATES } =
-  require("../data");
-const { round2, toAmount, toBool, collectCaveats, DISCLAIMER } = require("./helpers");
+const {
+  ratesFor,
+  normalizeFinancialYear,
+  COMMON_EFFECTIVE_LIVES,
+  CAPITAL_WORKS_RATES,
+} = require("../data");
+const {
+  round2,
+  toAmount,
+  toBool,
+  collectCaveats,
+  DISCLAIMER,
+} = require("./helpers");
 
 /**
  * @param {object} input
@@ -33,24 +43,31 @@ function calculateDepreciation(input = {}) {
   }
 
   const businessUsePercentage =
-    input.businessUsePercentage === undefined || input.businessUsePercentage === null
+    input.businessUsePercentage === undefined ||
+    input.businessUsePercentage === null
       ? 100
       : toAmount(input.businessUsePercentage, "businessUsePercentage");
 
-  const lookupKey = String(input.assetDescription ?? "").trim().toLowerCase();
+  const lookupKey = String(input.assetDescription ?? "")
+    .trim()
+    .toLowerCase();
   const effectiveLife =
     input.effectiveLifeYears !== undefined && input.effectiveLifeYears !== null
       ? toAmount(input.effectiveLifeYears, "effectiveLifeYears")
-      : (COMMON_EFFECTIVE_LIVES[lookupKey] ?? null);
+      : COMMON_EFFECTIVE_LIVES[lookupKey] ?? null;
 
   // Instant asset write-off check first - it removes the need for a schedule.
   const iawo = cfg.instantAssetWriteOff;
   const smallBusinessEntity = toBool(input.smallBusinessEntity, false);
-  const aggregatedTurnover = toAmount(input.aggregatedTurnover, "aggregatedTurnover");
+  const aggregatedTurnover = toAmount(
+    input.aggregatedTurnover,
+    "aggregatedTurnover"
+  );
   const iawoEligible =
     smallBusinessEntity &&
     cost < iawo.amount &&
-    (aggregatedTurnover === 0 || aggregatedTurnover < iawo.aggregatedTurnoverThreshold);
+    (aggregatedTurnover === 0 ||
+      aggregatedTurnover < iawo.aggregatedTurnoverThreshold);
 
   if (iawoEligible) {
     return {
@@ -80,15 +97,21 @@ function calculateDepreciation(input = {}) {
     };
   }
 
-  const method = input.method === "prime-cost" ? "prime-cost" : "diminishing-value";
+  const method =
+    input.method === "prime-cost" ? "prime-cost" : "diminishing-value";
   const daysFirstYear =
-    input.daysHeldInFirstYear === undefined || input.daysHeldInFirstYear === null
+    input.daysHeldInFirstYear === undefined ||
+    input.daysHeldInFirstYear === null
       ? 365
       : toAmount(input.daysHeldInFirstYear, "daysHeldInFirstYear");
-  const years = Math.max(1, Math.min(20, toAmount(input.years, "years") || Math.ceil(effectiveLife)));
+  const years = Math.max(
+    1,
+    Math.min(20, toAmount(input.years, "years") || Math.ceil(effectiveLife))
+  );
 
   const openingAdjustableValue =
-    input.openingAdjustableValue !== undefined && input.openingAdjustableValue !== null
+    input.openingAdjustableValue !== undefined &&
+    input.openingAdjustableValue !== null
       ? toAmount(input.openingAdjustableValue, "openingAdjustableValue")
       : cost;
 
@@ -133,7 +156,8 @@ function calculateDepreciation(input = {}) {
     carDepreciationLimit: isCar ? cfg.carDepreciationLimit : undefined,
     effectiveLifeYears: effectiveLife,
     effectiveLifeSource:
-      input.effectiveLifeYears !== undefined && input.effectiveLifeYears !== null
+      input.effectiveLifeYears !== undefined &&
+      input.effectiveLifeYears !== null
         ? "supplied"
         : "bundled common effective life list - confirm against the current taxation ruling",
     businessUsePercentage,
@@ -162,15 +186,20 @@ function calculateDepreciation(input = {}) {
 function calculateCapitalWorks(input = {}) {
   const constructionCost = toAmount(input.constructionCost, "constructionCost");
   const match = CAPITAL_WORKS_RATES.find(
-    (r) => r.assetType.toLowerCase() === String(input.assetType ?? "").trim().toLowerCase()
+    (r) =>
+      r.assetType.toLowerCase() ===
+      String(input.assetType ?? "")
+        .trim()
+        .toLowerCase()
   );
   const rate =
     input.rate !== undefined && input.rate !== null
       ? toAmount(input.rate, "rate")
-      : (match?.rate ?? 0.025);
+      : match?.rate ?? 0.025;
   const normalizedRate = rate > 1 ? rate / 100 : rate;
   const days =
-    input.daysIncomeProducing === undefined || input.daysIncomeProducing === null
+    input.daysIncomeProducing === undefined ||
+    input.daysIncomeProducing === null
       ? 365
       : toAmount(input.daysIncomeProducing, "daysIncomeProducing");
 

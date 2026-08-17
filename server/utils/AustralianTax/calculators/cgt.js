@@ -3,7 +3,13 @@
  * and the four small business CGT concessions in Division 152.
  */
 const { ratesFor, normalizeFinancialYear } = require("../data");
-const { round2, toAmount, toBool, collectCaveats, DISCLAIMER } = require("./helpers");
+const {
+  round2,
+  toAmount,
+  toBool,
+  collectCaveats,
+  DISCLAIMER,
+} = require("./helpers");
 
 const DISCOUNT_KEY = {
   individual: "individualDiscount",
@@ -35,11 +41,14 @@ const DISCOUNT_KEY = {
  */
 function calculateCapitalGain(input = {}) {
   const rates = ratesFor(normalizeFinancialYear(input.financialYear));
-  const entityType = DISCOUNT_KEY[input.entityType] ? input.entityType : "individual";
+  const entityType = DISCOUNT_KEY[input.entityType]
+    ? input.entityType
+    : "individual";
 
   const capitalProceeds = toAmount(input.capitalProceeds, "capitalProceeds");
   const costBase =
-    toAmount(input.costBase, "costBase") + toAmount(input.improvementCosts, "improvementCosts");
+    toAmount(input.costBase, "costBase") +
+    toAmount(input.improvementCosts, "improvementCosts");
 
   const grossGain = round2(capitalProceeds - costBase);
   const steps = [
@@ -66,8 +75,14 @@ function calculateCapitalGain(input = {}) {
   }
 
   // 1. Apply capital losses BEFORE the discount.
-  const currentYearLosses = toAmount(input.currentYearCapitalLosses, "currentYearCapitalLosses");
-  const priorYearLosses = toAmount(input.priorYearCapitalLosses, "priorYearCapitalLosses");
+  const currentYearLosses = toAmount(
+    input.currentYearCapitalLosses,
+    "currentYearCapitalLosses"
+  );
+  const priorYearLosses = toAmount(
+    input.priorYearCapitalLosses,
+    "priorYearCapitalLosses"
+  );
   const totalLosses = currentYearLosses + priorYearLosses;
   let running = Math.max(0, grossGain - totalLosses);
   if (totalLosses > 0)
@@ -98,7 +113,11 @@ function calculateCapitalGain(input = {}) {
       grossCapitalGain: grossGain,
       steps: [
         ...steps,
-        { step: "15-year exemption - entire gain disregarded", amount: round2(-running), runningTotal: 0 },
+        {
+          step: "15-year exemption - entire gain disregarded",
+          amount: round2(-running),
+          runningTotal: 0,
+        },
       ],
       concessionsApplied,
       netCapitalGain: 0,
@@ -109,10 +128,17 @@ function calculateCapitalGain(input = {}) {
 
   // 3. CGT discount.
   const holdingQualifies =
-    input.heldMoreThan12Months !== undefined && input.heldMoreThan12Months !== null
+    input.heldMoreThan12Months !== undefined &&
+    input.heldMoreThan12Months !== null
       ? toBool(input.heldMoreThan12Months, false)
-      : qualifiesForDiscountByDate(input.acquisitionDate, input.disposalDate, rates);
-  const discountRate = holdingQualifies ? rates.cgt[DISCOUNT_KEY[entityType]] : 0;
+      : qualifiesForDiscountByDate(
+          input.acquisitionDate,
+          input.disposalDate,
+          rates
+        );
+  const discountRate = holdingQualifies
+    ? rates.cgt[DISCOUNT_KEY[entityType]]
+    : 0;
   const discountAmount = round2(running * discountRate);
   if (discountAmount > 0) {
     running = round2(running - discountAmount);
@@ -120,7 +146,8 @@ function calculateCapitalGain(input = {}) {
       step: `CGT discount (${(discountRate * 100).toFixed(2).replace(/\.00$/, "")}%)`,
       amount: round2(-discountAmount),
       runningTotal: running,
-      detail: "Requires the asset to have been held for at least 12 months. Companies get no discount.",
+      detail:
+        "Requires the asset to have been held for at least 12 months. Companies get no discount.",
     });
   } else if (!holdingQualifies) {
     steps.push({
@@ -139,15 +166,30 @@ function calculateCapitalGain(input = {}) {
       concession: "Subdiv 152-C 50% active asset reduction",
       amountDisregarded: reduction,
     });
-    steps.push({ step: "50% active asset reduction", amount: round2(-reduction), runningTotal: running });
+    steps.push({
+      step: "50% active asset reduction",
+      amount: round2(-reduction),
+      runningTotal: running,
+    });
   }
 
   // 5. Retirement exemption (lifetime cap).
-  const alreadyUsed = toAmount(sb.retirementExemptionAlreadyUsed, "retirementExemptionAlreadyUsed");
-  const requestedRetirement = toAmount(sb.retirementExemptionAmount, "retirementExemptionAmount");
+  const alreadyUsed = toAmount(
+    sb.retirementExemptionAlreadyUsed,
+    "retirementExemptionAlreadyUsed"
+  );
+  const requestedRetirement = toAmount(
+    sb.retirementExemptionAmount,
+    "retirementExemptionAmount"
+  );
   if (requestedRetirement > 0) {
-    const capRemaining = Math.max(0, sbCfg.retirementExemptionLifetimeCap - alreadyUsed);
-    const applied = round2(Math.min(requestedRetirement, capRemaining, running));
+    const capRemaining = Math.max(
+      0,
+      sbCfg.retirementExemptionLifetimeCap - alreadyUsed
+    );
+    const applied = round2(
+      Math.min(requestedRetirement, capRemaining, running)
+    );
     running = round2(running - applied);
     concessionsApplied.push({
       concession: "Subdiv 152-D retirement exemption",
@@ -156,7 +198,11 @@ function calculateCapitalGain(input = {}) {
       lifetimeCapRemaining: round2(capRemaining - applied),
       note: "If the individual is under 55 at the time of the choice, the amount must be paid into a complying superannuation fund or RSA.",
     });
-    steps.push({ step: "Retirement exemption", amount: round2(-applied), runningTotal: running });
+    steps.push({
+      step: "Retirement exemption",
+      amount: round2(-applied),
+      runningTotal: running,
+    });
   }
 
   // 6. Rollover.
@@ -169,7 +215,11 @@ function calculateCapitalGain(input = {}) {
       amountDeferred: applied,
       note: "A replacement asset must be acquired within the replacement asset period (one year before to two years after the CGT event) or the deferred gain crystallises.",
     });
-    steps.push({ step: "Small business rollover", amount: round2(-applied), runningTotal: running });
+    steps.push({
+      step: "Small business rollover",
+      amount: round2(-applied),
+      runningTotal: running,
+    });
   }
 
   const netCapitalGain = round2(Math.max(0, running));
@@ -201,7 +251,8 @@ function qualifiesForDiscountByDate(acquisitionDate, disposalDate, rates) {
   if (!acquisitionDate) return false;
   const acquired = new Date(acquisitionDate);
   const disposed = disposalDate ? new Date(disposalDate) : new Date();
-  if (Number.isNaN(acquired.getTime()) || Number.isNaN(disposed.getTime())) return false;
+  if (Number.isNaN(acquired.getTime()) || Number.isNaN(disposed.getTime()))
+    return false;
   const days = (disposed - acquired) / (1000 * 60 * 60 * 24);
   return days > rates.cgt.minimumHoldingDays;
 }

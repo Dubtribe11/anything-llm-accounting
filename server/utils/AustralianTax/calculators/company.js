@@ -2,7 +2,13 @@
  * Company tax, franking/imputation and Division 7A calculations.
  */
 const { ratesFor, normalizeFinancialYear } = require("../data");
-const { round2, toAmount, toBool, collectCaveats, DISCLAIMER } = require("./helpers");
+const {
+  round2,
+  toAmount,
+  toBool,
+  collectCaveats,
+  DISCLAIMER,
+} = require("./helpers");
 
 /**
  * Works out whether a company is a base rate entity for the year.
@@ -10,13 +16,18 @@ const { round2, toAmount, toBool, collectCaveats, DISCLAIMER } = require("./help
  * than 80% of its assessable income as base rate entity passive income.
  */
 function baseRateEntityTest(input, rates) {
-  const aggregatedTurnover = toAmount(input.aggregatedTurnover, "aggregatedTurnover");
+  const aggregatedTurnover = toAmount(
+    input.aggregatedTurnover,
+    "aggregatedTurnover"
+  );
   const assessableIncome = toAmount(input.assessableIncome, "assessableIncome");
   const passiveIncome = toAmount(input.passiveIncome, "passiveIncome");
   const cfg = rates.company;
 
-  const turnoverPasses = aggregatedTurnover < cfg.baseRateEntityTurnoverThreshold;
-  const passiveRatio = assessableIncome > 0 ? passiveIncome / assessableIncome : 0;
+  const turnoverPasses =
+    aggregatedTurnover < cfg.baseRateEntityTurnoverThreshold;
+  const passiveRatio =
+    assessableIncome > 0 ? passiveIncome / assessableIncome : 0;
   const passivePasses = passiveRatio <= cfg.baseRateEntityPassiveIncomeCap;
   const isBaseRateEntity = turnoverPasses && passivePasses;
 
@@ -69,8 +80,14 @@ function calculateCompanyTax(input = {}) {
     input.frankingCreditsReceived,
     "frankingCreditsReceived"
   );
-  const otherRefundableOffsets = toAmount(input.otherRefundableOffsets, "otherRefundableOffsets");
-  const paygInstalmentsPaid = toAmount(input.paygInstalmentsPaid, "paygInstalmentsPaid");
+  const otherRefundableOffsets = toAmount(
+    input.otherRefundableOffsets,
+    "otherRefundableOffsets"
+  );
+  const paygInstalmentsPaid = toAmount(
+    input.paygInstalmentsPaid,
+    "paygInstalmentsPaid"
+  );
   const totalCredits = round2(
     frankingCreditsReceived + otherRefundableOffsets + paygInstalmentsPaid
   );
@@ -79,7 +96,11 @@ function calculateCompanyTax(input = {}) {
   return {
     calculator: "company-tax",
     financialYear: rates.financialYear,
-    baseRateEntity: { ...test, rateApplied: rate, forcedStandardRate: forceStandard },
+    baseRateEntity: {
+      ...test,
+      rateApplied: rate,
+      forcedStandardRate: forceStandard,
+    },
     taxableIncome: round2(taxableIncome),
     priorYearLossesApplied: round2(priorYearLossesApplied),
     taxRate: rate,
@@ -120,12 +141,19 @@ function calculateFranking(input = {}) {
   const rate =
     input.corporateTaxRateForImputation !== undefined &&
     input.corporateTaxRateForImputation !== null
-      ? toAmount(input.corporateTaxRateForImputation, "corporateTaxRateForImputation")
+      ? toAmount(
+          input.corporateTaxRateForImputation,
+          "corporateTaxRateForImputation"
+        )
       : rates.company.baseRateEntityRate;
 
   const normalizedRate = rate > 1 ? rate / 100 : rate;
-  const maximumFrankingCredit = round2(distribution * (normalizedRate / (1 - normalizedRate)));
-  const frankingCredit = round2(maximumFrankingCredit * (frankingPercentage / 100));
+  const maximumFrankingCredit = round2(
+    distribution * (normalizedRate / (1 - normalizedRate))
+  );
+  const frankingCredit = round2(
+    maximumFrankingCredit * (frankingPercentage / 100)
+  );
   const grossedUp = round2(distribution + frankingCredit);
 
   return {
@@ -164,13 +192,17 @@ function calculateDiv7AMinimumRepayment(input = {}) {
   const rates = ratesFor(normalizeFinancialYear(input.financialYear));
   const cfg = rates.div7a;
 
-  const openingBalance = toAmount(input.openingLoanBalance, "openingLoanBalance");
+  const openingBalance = toAmount(
+    input.openingLoanBalance,
+    "openingLoanBalance"
+  );
   const loanTermYears = input.loanTermYears
     ? toAmount(input.loanTermYears, "loanTermYears")
     : cfg.maxTermUnsecuredYears;
   const yearsElapsed = toAmount(input.yearsElapsed, "yearsElapsed");
   const suppliedRate =
-    input.benchmarkInterestRate !== undefined && input.benchmarkInterestRate !== null
+    input.benchmarkInterestRate !== undefined &&
+    input.benchmarkInterestRate !== null
       ? toAmount(input.benchmarkInterestRate, "benchmarkInterestRate")
       : null;
   const rate =
@@ -196,7 +228,8 @@ function calculateDiv7AMinimumRepayment(input = {}) {
   }
 
   const denominator = 1 - Math.pow(1 + rate, -remainingTerm);
-  const minimumYearlyRepayment = denominator === 0 ? openingBalance : (openingBalance * rate) / denominator;
+  const minimumYearlyRepayment =
+    denominator === 0 ? openingBalance : (openingBalance * rate) / denominator;
   const interestComponent = round2(openingBalance * rate);
 
   return {

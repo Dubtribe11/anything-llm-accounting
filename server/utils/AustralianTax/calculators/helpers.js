@@ -20,9 +20,14 @@ function roundDownDollars(value) {
 /** Coerce user/LLM supplied input into a non-negative number. */
 function toAmount(value, fieldName = "amount") {
   if (value === null || value === undefined || value === "") return 0;
-  const num = typeof value === "number" ? value : Number(String(value).replace(/[$,\s]/g, ""));
+  const num =
+    typeof value === "number"
+      ? value
+      : Number(String(value).replace(/[$,\s]/g, ""));
   if (!Number.isFinite(num))
-    throw new Error(`${fieldName} must be a number, received ${JSON.stringify(value)}`);
+    throw new Error(
+      `${fieldName} must be a number, received ${JSON.stringify(value)}`
+    );
   return num;
 }
 
@@ -57,7 +62,8 @@ function applyBrackets(amount, brackets) {
   let matched = null;
 
   for (const bracket of brackets) {
-    const upper = bracket.to === null || bracket.to === undefined ? Infinity : bracket.to;
+    const upper =
+      bracket.to === null || bracket.to === undefined ? Infinity : bracket.to;
     if (income <= bracket.from) continue;
 
     matched = bracket;
@@ -102,7 +108,12 @@ function applyBrackets(amount, brackets) {
     tax = breakdown.reduce((sum, row) => sum + row.tax, 0);
   }
 
-  return { tax: round2(Math.max(0, tax)), marginalRate, bracket: matched, breakdown };
+  return {
+    tax: round2(Math.max(0, tax)),
+    marginalRate,
+    bracket: matched,
+    breakdown,
+  };
 }
 
 /**

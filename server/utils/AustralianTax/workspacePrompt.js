@@ -25,7 +25,10 @@ async function basePromptForWorkspace(workspace) {
       if (taxPrompt) return taxPrompt;
     }
   } catch (error) {
-    console.error("[TaxProfile] Failed to compose system prompt:", error.message);
+    console.error(
+      "[TaxProfile] Failed to compose system prompt:",
+      error.message
+    );
   }
 
   return workspacePrompt ?? SystemSettings.saneDefaultSystemPrompt;

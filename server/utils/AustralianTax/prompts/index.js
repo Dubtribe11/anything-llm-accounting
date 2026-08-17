@@ -5,7 +5,11 @@
  * rather than written out by hand, so the prompt can never drift away from what
  * the calculators actually use.
  */
-const { ratesFor, lodgementFinancialYearOf, SUPPORTED_YEARS } = require("../data");
+const {
+  ratesFor,
+  lodgementFinancialYearOf,
+  SUPPORTED_YEARS,
+} = require("../data");
 
 /**
  * The entity types a profile can be set to. `promptKey` selects the specialist
@@ -15,22 +19,26 @@ const { ratesFor, lodgementFinancialYearOf, SUPPORTED_YEARS } = require("../data
 const ENTITY_TYPES = {
   individual: {
     label: "Individual",
-    description: "Salary and wage earners, investors and retirees lodging an individual return.",
+    description:
+      "Salary and wage earners, investors and retirees lodging an individual return.",
     knowledgeEntityType: "individual",
   },
   "sole-trader": {
     label: "Sole Trader",
-    description: "An individual carrying on a business in their own name under an ABN.",
+    description:
+      "An individual carrying on a business in their own name under an ABN.",
     knowledgeEntityType: "sole-trader",
   },
   company: {
     label: "Company",
-    description: "A Pty Ltd company - trading, investment or corporate beneficiary.",
+    description:
+      "A Pty Ltd company - trading, investment or corporate beneficiary.",
     knowledgeEntityType: "company",
   },
   trust: {
     label: "Discretionary (Family) Trust",
-    description: "A discretionary trust distributing income to a class of beneficiaries each year.",
+    description:
+      "A discretionary trust distributing income to a class of beneficiaries each year.",
     knowledgeEntityType: "trust",
   },
   "unit-trust": {
@@ -40,7 +48,8 @@ const ENTITY_TYPES = {
   },
   partnership: {
     label: "Partnership",
-    description: "A general law or tax law partnership, including co-owned investment property.",
+    description:
+      "A general law or tax law partnership, including co-owned investment property.",
     knowledgeEntityType: "partnership",
   },
   smsf: {
@@ -225,9 +234,15 @@ function buildProfileContext(profile = {}) {
   };
 
   add("Entity name", profile.entityName);
-  add("Entity type", ENTITY_TYPES[profile.entityType]?.label ?? profile.entityType);
+  add(
+    "Entity type",
+    ENTITY_TYPES[profile.entityType]?.label ?? profile.entityType
+  );
   add("ABN", profile.abn);
-  add("TFN on file", profile.tfnOnFile ? "Yes (never quote it back in full)" : null);
+  add(
+    "TFN on file",
+    profile.tfnOnFile ? "Yes (never quote it back in full)" : null
+  );
   add("Income year in focus", profile.financialYear);
   add("State / territory", profile.state);
   add("Residency status", profile.residencyStatus);
@@ -239,7 +254,12 @@ function buildProfileContext(profile = {}) {
         ? "Not registered"
         : null
   );
-  add("Employees", profile.hasEmployees ? "Yes - PAYG withholding, SG and possibly payroll tax apply" : null);
+  add(
+    "Employees",
+    profile.hasEmployees
+      ? "Yes - PAYG withholding, SG and possibly payroll tax apply"
+      : null
+  );
   add("Industry", profile.industry);
   add("Accounting software", profile.accountingSoftware);
   add("Notes", profile.notes);
@@ -259,7 +279,9 @@ function buildProfileContext(profile = {}) {
  * @returns {string}
  */
 function buildSystemPrompt(profile = {}, options = {}) {
-  const entityType = ENTITY_TYPES[profile.entityType] ? profile.entityType : "practice";
+  const entityType = ENTITY_TYPES[profile.entityType]
+    ? profile.entityType
+    : "practice";
   const financialYear = profile.financialYear || lodgementFinancialYearOf();
   const includeRateDigest = options.includeRateDigest !== false;
 
@@ -284,7 +306,9 @@ function buildSystemPrompt(profile = {}, options = {}) {
   );
 
   if (options.additionalInstructions?.trim())
-    sections.push(`## Additional instructions for this workspace\n\n${options.additionalInstructions.trim()}`);
+    sections.push(
+      `## Additional instructions for this workspace\n\n${options.additionalInstructions.trim()}`
+    );
 
   return sections.filter(Boolean).join("\n\n");
 }

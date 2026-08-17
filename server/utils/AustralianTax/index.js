@@ -16,10 +16,19 @@ const {
   calculateDiv7AMinimumRepayment,
 } = require("./calculators/company");
 const { calculateTrustDistribution } = require("./calculators/trust");
-const { calculatePartnershipDistribution } = require("./calculators/partnership");
+const {
+  calculatePartnershipDistribution,
+} = require("./calculators/partnership");
 const { calculateCapitalGain } = require("./calculators/cgt");
-const { calculateGst, calculateBas, gstRegistrationCheck } = require("./calculators/gst");
-const { calculateFbt, calculateCarFringeBenefit } = require("./calculators/fbt");
+const {
+  calculateGst,
+  calculateBas,
+  gstRegistrationCheck,
+} = require("./calculators/gst");
+const {
+  calculateFbt,
+  calculateCarFringeBenefit,
+} = require("./calculators/fbt");
 const {
   calculateSuperGuarantee,
   calculateContributionCaps,
@@ -47,7 +56,11 @@ const CALCULATORS = {
       type: "object",
       properties: {
         financialYear: FY_PARAM,
-        taxableIncome: { type: "number", description: "Taxable income. Supply this, or assessableIncome and deductions." },
+        taxableIncome: {
+          type: "number",
+          description:
+            "Taxable income. Supply this, or assessableIncome and deductions.",
+        },
         assessableIncome: { type: "number" },
         deductions: { type: "number" },
         residency: {
@@ -57,7 +70,10 @@ const CALCULATORS = {
         hasSpouseOrDependants: { type: "boolean" },
         dependentChildren: { type: "number" },
         seniorOrPensioner: { type: "boolean" },
-        medicareLevyExemption: { type: "string", enum: ["none", "half", "full"] },
+        medicareLevyExemption: {
+          type: "string",
+          enum: ["none", "half", "full"],
+        },
         privateHospitalCover: { type: "boolean" },
         reportableFringeBenefits: { type: "number" },
         reportableSuperContributions: { type: "number" },
@@ -85,7 +101,10 @@ const CALCULATORS = {
         taxableIncome: { type: "number" },
         aggregatedTurnover: { type: "number" },
         assessableIncome: { type: "number" },
-        passiveIncome: { type: "number", description: "Base rate entity passive income." },
+        passiveIncome: {
+          type: "number",
+          description: "Base rate entity passive income.",
+        },
         priorYearLossesApplied: { type: "number" },
         frankingCreditsReceived: { type: "number" },
         otherRefundableOffsets: { type: "number" },
@@ -104,8 +123,14 @@ const CALCULATORS = {
       required: ["distributionAmount"],
       properties: {
         financialYear: FY_PARAM,
-        distributionAmount: { type: "number", description: "Cash dividend amount." },
-        frankingPercentage: { type: "number", description: "0-100, defaults to 100." },
+        distributionAmount: {
+          type: "number",
+          description: "Cash dividend amount.",
+        },
+        frankingPercentage: {
+          type: "number",
+          description: "0-100, defaults to 100.",
+        },
         corporateTaxRateForImputation: {
           type: "number",
           description: "0.25 or 0.30. Defaults to the base rate entity rate.",
@@ -125,11 +150,21 @@ const CALCULATORS = {
         financialYear: FY_PARAM,
         openingLoanBalance: {
           type: "number",
-          description: "Amount of the loan not repaid at the end of the previous income year.",
+          description:
+            "Amount of the loan not repaid at the end of the previous income year.",
         },
-        loanTermYears: { type: "number", description: "7 for unsecured, 25 for secured." },
-        yearsElapsed: { type: "number", description: "Complete income years since the loan was made." },
-        benchmarkInterestRate: { type: "number", description: "Override the bundled rate if needed." },
+        loanTermYears: {
+          type: "number",
+          description: "7 for unsecured, 25 for secured.",
+        },
+        yearsElapsed: {
+          type: "number",
+          description: "Complete income years since the loan was made.",
+        },
+        benchmarkInterestRate: {
+          type: "number",
+          description: "Override the bundled rate if needed.",
+        },
       },
     },
   },
@@ -196,7 +231,10 @@ const CALCULATORS = {
             type: "object",
             properties: {
               name: { type: "string" },
-              entityType: { type: "string", enum: ["individual", "company", "trust"] },
+              entityType: {
+                type: "string",
+                enum: ["individual", "company", "trust"],
+              },
               sharePercent: { type: "number" },
               otherTaxableIncome: { type: "number" },
             },
@@ -222,7 +260,10 @@ const CALCULATORS = {
         capitalProceeds: { type: "number" },
         costBase: { type: "number" },
         improvementCosts: { type: "number" },
-        acquisitionDate: { type: "string", description: "ISO date, e.g. 2019-03-14." },
+        acquisitionDate: {
+          type: "string",
+          description: "ISO date, e.g. 2019-03-14.",
+        },
         disposalDate: { type: "string" },
         heldMoreThan12Months: { type: "boolean" },
         currentYearCapitalLosses: { type: "number" },
@@ -243,7 +284,7 @@ const CALCULATORS = {
 
   gst: {
     description:
-      'Add GST to a price, or extract the GST from a GST-inclusive amount (one eleventh).',
+      "Add GST to a price, or extract the GST from a GST-inclusive amount (one eleventh).",
     handler: calculateGst,
     parameters: {
       type: "object",
@@ -257,7 +298,8 @@ const CALCULATORS = {
   },
 
   business_activity_statement: {
-    description: "Estimate the key BAS labels (G1, 1A, 1B, W1, W2) and the net amount payable or refundable.",
+    description:
+      "Estimate the key BAS labels (G1, 1A, 1B, W1, W2) and the net amount payable or refundable.",
     handler: calculateBas,
     parameters: {
       type: "object",
@@ -280,7 +322,8 @@ const CALCULATORS = {
   },
 
   gst_registration_check: {
-    description: "Decide whether GST registration is required and which reporting cycle applies.",
+    description:
+      "Decide whether GST registration is required and which reporting cycle applies.",
     handler: gstRegistrationCheck,
     parameters: {
       type: "object",
@@ -295,7 +338,8 @@ const CALCULATORS = {
   },
 
   fringe_benefits_tax: {
-    description: "Calculate FBT payable from Type 1 and Type 2 aggregate amounts.",
+    description:
+      "Calculate FBT payable from Type 1 and Type 2 aggregate amounts.",
     handler: calculateFbt,
     parameters: {
       type: "object",
@@ -303,7 +347,8 @@ const CALCULATORS = {
         financialYear: FY_PARAM,
         type1AggregateAmount: {
           type: "number",
-          description: "Taxable value of benefits where a GST credit was available.",
+          description:
+            "Taxable value of benefits where a GST credit was available.",
         },
         type2AggregateAmount: { type: "number" },
         fbtInstalmentsPaid: { type: "number" },
@@ -331,7 +376,8 @@ const CALCULATORS = {
   },
 
   superannuation_guarantee: {
-    description: "Calculate the superannuation guarantee on ordinary time earnings for a quarter or year.",
+    description:
+      "Calculate the superannuation guarantee on ordinary time earnings for a quarter or year.",
     handler: calculateSuperGuarantee,
     parameters: {
       type: "object",
@@ -356,14 +402,19 @@ const CALCULATORS = {
         nonConcessionalContributions: { type: "number" },
         totalSuperBalanceAt30June: { type: "number" },
         unusedConcessionalCapCarriedForward: { type: "number" },
-        income: { type: "number", description: "Income for Division 293 purposes, excluding the contributions." },
+        income: {
+          type: "number",
+          description:
+            "Income for Division 293 purposes, excluding the contributions.",
+        },
         age: { type: "number" },
       },
     },
   },
 
   smsf_income_tax: {
-    description: "Estimate a complying superannuation fund / SMSF's income tax, including ECPI and NALI.",
+    description:
+      "Estimate a complying superannuation fund / SMSF's income tax, including ECPI and NALI.",
     handler: calculateSmsfTax,
     parameters: {
       type: "object",
@@ -391,7 +442,10 @@ const CALCULATORS = {
       properties: {
         financialYear: FY_PARAM,
         cost: { type: "number" },
-        assetDescription: { type: "string", description: "Used to look up a common effective life." },
+        assetDescription: {
+          type: "string",
+          description: "Used to look up a common effective life.",
+        },
         effectiveLifeYears: { type: "number" },
         method: { type: "string", enum: ["diminishing-value", "prime-cost"] },
         daysHeldInFirstYear: { type: "number" },
@@ -405,7 +459,8 @@ const CALCULATORS = {
   },
 
   capital_works: {
-    description: "Calculate the Division 43 capital works deduction on construction costs.",
+    description:
+      "Calculate the Division 43 capital works deduction on construction costs.",
     handler: calculateCapitalWorks,
     parameters: {
       type: "object",
@@ -428,7 +483,10 @@ const CALCULATORS = {
       required: ["state", "annualAustralianWages"],
       properties: {
         financialYear: FY_PARAM,
-        state: { type: "string", enum: ["NSW", "VIC", "QLD", "SA", "WA", "TAS", "ACT", "NT"] },
+        state: {
+          type: "string",
+          enum: ["NSW", "VIC", "QLD", "SA", "WA", "TAS", "ACT", "NT"],
+        },
         annualAustralianWages: { type: "number" },
         taxableWagesInState: { type: "number" },
         regionalEmployer: { type: "boolean" },
@@ -445,7 +503,15 @@ const CALCULATORS = {
         financialYear: FY_PARAM,
         entityType: {
           type: "string",
-          enum: ["individual", "company", "trust", "partnership", "smsf", "employer", "business"],
+          enum: [
+            "individual",
+            "company",
+            "trust",
+            "partnership",
+            "smsf",
+            "employer",
+            "business",
+          ],
         },
       },
     },

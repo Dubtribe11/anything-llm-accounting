@@ -34,13 +34,18 @@ function lowIncomeTaxOffset(taxableIncome, lito) {
 
   const { firstTaper, secondTaper } = lito;
   if (taxableIncome <= firstTaper.to) {
-    return round2(lito.max - (taxableIncome - firstTaper.from) * firstTaper.rate);
+    return round2(
+      lito.max - (taxableIncome - firstTaper.from) * firstTaper.rate
+    );
   }
   const atSecondStart =
     lito.max - (firstTaper.to - firstTaper.from) * firstTaper.rate;
   if (taxableIncome <= secondTaper.to) {
     return round2(
-      Math.max(0, atSecondStart - (taxableIncome - secondTaper.from) * secondTaper.rate)
+      Math.max(
+        0,
+        atSecondStart - (taxableIncome - secondTaper.from) * secondTaper.rate
+      )
     );
   }
   return 0;
@@ -53,11 +58,19 @@ function lowIncomeTaxOffset(taxableIncome, lito) {
  */
 function medicareLevy(taxableIncome, rates, opts) {
   const cfg = rates.medicareLevy;
-  const { hasSpouseOrDependants, dependentChildren, seniorOrPensioner, exemption } =
-    opts;
+  const {
+    hasSpouseOrDependants,
+    dependentChildren,
+    seniorOrPensioner,
+    exemption,
+  } = opts;
 
   if (exemption === "full")
-    return { amount: 0, basis: "Full Medicare levy exemption claimed", threshold: null };
+    return {
+      amount: 0,
+      basis: "Full Medicare levy exemption claimed",
+      threshold: null,
+    };
 
   let band;
   if (hasSpouseOrDependants) {
@@ -68,7 +81,8 @@ function medicareLevy(taxableIncome, rates, opts) {
 
   const perChild = band.perDependentChild ?? cfg.family.perDependentChild ?? 0;
   const threshold =
-    band.threshold + (hasSpouseOrDependants ? perChild * Math.max(0, dependentChildren) : 0);
+    band.threshold +
+    (hasSpouseOrDependants ? perChild * Math.max(0, dependentChildren) : 0);
   // The published upper limit is the threshold divided by (1 - rate/shadeInRate).
   const upper = threshold / (1 - cfg.rate / cfg.shadeInRate);
 
@@ -90,7 +104,12 @@ function medicareLevy(taxableIncome, rates, opts) {
     basis += " (halved for a half Medicare levy exemption)";
   }
 
-  return { amount: round2(amount), basis, threshold: round2(threshold), upperLimit: round2(upper) };
+  return {
+    amount: round2(amount),
+    basis,
+    threshold: round2(threshold),
+    upperLimit: round2(upper),
+  };
 }
 
 /**
@@ -99,10 +118,16 @@ function medicareLevy(taxableIncome, rates, opts) {
  */
 function medicareLevySurcharge(incomeForSurcharge, rates, opts) {
   const cfg = rates.medicareLevySurcharge;
-  const { hasSpouseOrDependants, dependentChildren, privateHospitalCover } = opts;
+  const { hasSpouseOrDependants, dependentChildren, privateHospitalCover } =
+    opts;
 
   if (privateHospitalCover)
-    return { amount: 0, rate: 0, tier: "Not applicable", basis: "Private hospital cover held for the full year" };
+    return {
+      amount: 0,
+      rate: 0,
+      tier: "Not applicable",
+      basis: "Private hospital cover held for the full year",
+    };
 
   const childAdjustment =
     hasSpouseOrDependants && dependentChildren > 1
@@ -127,7 +152,12 @@ function medicareLevySurcharge(incomeForSurcharge, rates, opts) {
       };
     }
   }
-  return { amount: 0, rate: 0, tier: "Unknown", basis: "No surcharge tier matched" };
+  return {
+    amount: 0,
+    rate: 0,
+    tier: "Unknown",
+    basis: "No surcharge tier matched",
+  };
 }
 
 /**
@@ -152,12 +182,15 @@ function studyLoanRepayment(repaymentIncome, rates, loanBalance) {
       if (repaymentIncome <= band.from) continue;
       const slice = Math.min(repaymentIncome, upper) - band.from;
       amount += slice * band.rate;
-      rows.push(`${(band.rate * 100).toFixed(0)}% of $${round2(slice).toLocaleString("en-AU")}`);
+      rows.push(
+        `${(band.rate * 100).toFixed(0)}% of $${round2(slice).toLocaleString("en-AU")}`
+      );
     }
     basis = `Marginal system: ${rows.join(" + ")}`;
   } else {
     const band = cfg.bands.find(
-      (b) => repaymentIncome >= b.from && (b.to === null || repaymentIncome < b.to)
+      (b) =>
+        repaymentIncome >= b.from && (b.to === null || repaymentIncome < b.to)
     );
     const rate = band?.rate ?? 0;
     amount = repaymentIncome * rate;
@@ -212,19 +245,30 @@ function calculateIndividualTax(input = {}) {
       : Math.max(0, assessableIncome - deductions);
 
   const hasSpouseOrDependants = toBool(input.hasSpouseOrDependants, false);
-  const dependentChildren = Math.max(0, toAmount(input.dependentChildren, "dependentChildren"));
+  const dependentChildren = Math.max(
+    0,
+    toAmount(input.dependentChildren, "dependentChildren")
+  );
   const seniorOrPensioner = toBool(input.seniorOrPensioner, false);
   const privateHospitalCover = toBool(input.privateHospitalCover, false);
-  const medicareLevyExemption = ["none", "half", "full"].includes(input.medicareLevyExemption)
+  const medicareLevyExemption = ["none", "half", "full"].includes(
+    input.medicareLevyExemption
+  )
     ? input.medicareLevyExemption
     : "none";
 
-  const reportableFringeBenefits = toAmount(input.reportableFringeBenefits, "reportableFringeBenefits");
+  const reportableFringeBenefits = toAmount(
+    input.reportableFringeBenefits,
+    "reportableFringeBenefits"
+  );
   const reportableSuperContributions = toAmount(
     input.reportableSuperContributions,
     "reportableSuperContributions"
   );
-  const netInvestmentLosses = toAmount(input.netInvestmentLosses, "netInvestmentLosses");
+  const netInvestmentLosses = toAmount(
+    input.netInvestmentLosses,
+    "netInvestmentLosses"
+  );
   const exemptForeignEmploymentIncome = toAmount(
     input.exemptForeignEmploymentIncome,
     "exemptForeignEmploymentIncome"
@@ -234,7 +278,10 @@ function calculateIndividualTax(input = {}) {
   const scale = applyBrackets(taxableIncome, rates.individual[bracketKey]);
 
   // LITO is only available to residents.
-  const lito = residency === "resident" ? lowIncomeTaxOffset(taxableIncome, rates.individual.lito) : 0;
+  const lito =
+    residency === "resident"
+      ? lowIncomeTaxOffset(taxableIncome, rates.individual.lito)
+      : 0;
   const otherNonRefundableOffsets = toAmount(
     input.otherNonRefundableOffsets,
     "otherNonRefundableOffsets"
@@ -254,7 +301,8 @@ function calculateIndividualTax(input = {}) {
       })
     : {
         amount: 0,
-        basis: "Foreign residents and working holiday makers are generally not liable for the Medicare levy",
+        basis:
+          "Foreign residents and working holiday makers are generally not liable for the Medicare levy",
         threshold: null,
       };
 
@@ -272,7 +320,12 @@ function calculateIndividualTax(input = {}) {
           dependentChildren,
           privateHospitalCover,
         })
-      : { amount: 0, rate: 0, tier: "Not applicable", basis: "Not liable for the Medicare levy" };
+      : {
+          amount: 0,
+          rate: 0,
+          tier: "Not applicable",
+          basis: "Not liable for the Medicare levy",
+        };
 
   // Repayment income for study and training loans.
   const repaymentIncome = round2(
@@ -283,21 +336,39 @@ function calculateIndividualTax(input = {}) {
       exemptForeignEmploymentIncome
   );
   const hasStudyLoan =
-    toBool(input.hasStudyLoan, false) || toAmount(input.studyLoanBalance, "studyLoanBalance") > 0;
+    toBool(input.hasStudyLoan, false) ||
+    toAmount(input.studyLoanBalance, "studyLoanBalance") > 0;
   const studyLoan = hasStudyLoan
-    ? studyLoanRepayment(repaymentIncome, rates, toAmount(input.studyLoanBalance, "studyLoanBalance"))
-    : { amount: 0, system: rates.studyLoan.system, basis: "No study or training loan" };
+    ? studyLoanRepayment(
+        repaymentIncome,
+        rates,
+        toAmount(input.studyLoanBalance, "studyLoanBalance")
+      )
+    : {
+        amount: 0,
+        system: rates.studyLoan.system,
+        basis: "No study or training loan",
+      };
 
   const totalLiability = round2(
     taxAfterOffsets + levy.amount + surcharge.amount + studyLoan.amount
   );
 
   const frankingCredits = toAmount(input.frankingCredits, "frankingCredits");
-  const otherRefundableOffsets = toAmount(input.otherRefundableOffsets, "otherRefundableOffsets");
+  const otherRefundableOffsets = toAmount(
+    input.otherRefundableOffsets,
+    "otherRefundableOffsets"
+  );
   const paygWithheld = toAmount(input.paygWithheld, "paygWithheld");
-  const paygInstalmentsPaid = toAmount(input.paygInstalmentsPaid, "paygInstalmentsPaid");
+  const paygInstalmentsPaid = toAmount(
+    input.paygInstalmentsPaid,
+    "paygInstalmentsPaid"
+  );
   const totalCredits = round2(
-    frankingCredits + otherRefundableOffsets + paygWithheld + paygInstalmentsPaid
+    frankingCredits +
+      otherRefundableOffsets +
+      paygWithheld +
+      paygInstalmentsPaid
   );
 
   const balance = round2(totalLiability - totalCredits);
@@ -343,7 +414,9 @@ function calculateIndividualTax(input = {}) {
       estimatedRefund: balance < 0 ? round2(Math.abs(balance)) : 0,
       estimatedAmountPayable: balance > 0 ? balance : 0,
       averageTaxRate:
-        taxableIncome > 0 ? round2((totalLiability / taxableIncome) * 100) / 100 : 0,
+        taxableIncome > 0
+          ? round2((totalLiability / taxableIncome) * 100) / 100
+          : 0,
       marginalRate: scale.marginalRate,
     },
     caveats: collectCaveats(

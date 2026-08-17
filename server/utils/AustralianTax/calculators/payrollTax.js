@@ -19,7 +19,9 @@ const { round2, toAmount, toBool, DISCLAIMER } = require("./helpers");
  */
 function calculatePayrollTax(input = {}) {
   const table = payrollTaxFor(normalizeFinancialYear(input.financialYear));
-  const state = String(input.state ?? "").trim().toUpperCase();
+  const state = String(input.state ?? "")
+    .trim()
+    .toUpperCase();
   const jurisdiction = table.jurisdictions[state];
 
   if (!jurisdiction) {
@@ -31,20 +33,29 @@ function calculatePayrollTax(input = {}) {
     };
   }
 
-  const annualAustralianWages = toAmount(input.annualAustralianWages, "annualAustralianWages");
+  const annualAustralianWages = toAmount(
+    input.annualAustralianWages,
+    "annualAustralianWages"
+  );
   const taxableWagesInState =
-    input.taxableWagesInState === undefined || input.taxableWagesInState === null
+    input.taxableWagesInState === undefined ||
+    input.taxableWagesInState === null
       ? annualAustralianWages
       : toAmount(input.taxableWagesInState, "taxableWagesInState");
   const regional = toBool(input.regionalEmployer, false);
 
   // Apportion the threshold by the share of wages paid in this jurisdiction.
   const proportion =
-    annualAustralianWages > 0 ? Math.min(1, taxableWagesInState / annualAustralianWages) : 1;
+    annualAustralianWages > 0
+      ? Math.min(1, taxableWagesInState / annualAustralianWages)
+      : 1;
   let threshold = jurisdiction.annualThreshold * proportion;
 
   // Phase-out jurisdictions reduce the deduction as wages rise.
-  if (jurisdiction.thresholdType === "phase-out" && jurisdiction.phaseOutUpper) {
+  if (
+    jurisdiction.thresholdType === "phase-out" &&
+    jurisdiction.phaseOutUpper
+  ) {
     const phaseStart = jurisdiction.annualThreshold;
     const phaseEnd = jurisdiction.phaseOutUpper;
     if (annualAustralianWages >= phaseEnd) threshold = 0;
@@ -57,8 +68,14 @@ function calculatePayrollTax(input = {}) {
 
   const taxableAbove = Math.max(0, taxableWagesInState - threshold);
 
-  let rate = regional && jurisdiction.regionalRate ? jurisdiction.regionalRate : jurisdiction.rate;
-  if (jurisdiction.higherRate && annualAustralianWages > jurisdiction.higherRateAppliesAbove)
+  let rate =
+    regional && jurisdiction.regionalRate
+      ? jurisdiction.regionalRate
+      : jurisdiction.rate;
+  if (
+    jurisdiction.higherRate &&
+    annualAustralianWages > jurisdiction.higherRateAppliesAbove
+  )
     rate = jurisdiction.higherRate;
   for (const tier of jurisdiction.tiers ?? []) {
     if (annualAustralianWages > tier.above) rate = tier.rate;
@@ -73,7 +90,8 @@ function calculatePayrollTax(input = {}) {
   for (const surcharge of jurisdiction.surcharges ?? []) {
     if (annualAustralianWages > surcharge.appliesAbove) {
       const amount = round2(
-        Math.max(0, taxableWagesInState - surcharge.appliesAbove * proportion) * surcharge.rate
+        Math.max(0, taxableWagesInState - surcharge.appliesAbove * proportion) *
+          surcharge.rate
       );
       surcharges.push({ ...surcharge, amount });
       surchargeTotal += amount;

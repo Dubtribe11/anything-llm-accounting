@@ -15,7 +15,9 @@ function calculateGst(input = {}) {
   const rates = ratesFor(normalizeFinancialYear(input.financialYear));
   const rate = rates.gst.rate;
   const amount = toAmount(input.amount, "amount");
-  const mode = ["add", "extract", "remove"].includes(input.mode) ? input.mode : "extract";
+  const mode = ["add", "extract", "remove"].includes(input.mode)
+    ? input.mode
+    : "extract";
 
   let exclusive;
   let gst;
@@ -73,12 +75,21 @@ function calculateBas(input = {}) {
   const gstFreeSales = toAmount(input.gstFreeSales, "gstFreeSales");
   const exportSales = toAmount(input.exportSales, "exportSales");
   const inputTaxedSales = toAmount(input.inputTaxedSales, "inputTaxedSales");
-  const taxableSales = Math.max(0, totalSales - gstFreeSales - exportSales - inputTaxedSales);
+  const taxableSales = Math.max(
+    0,
+    totalSales - gstFreeSales - exportSales - inputTaxedSales
+  );
 
   const totalPurchases = toAmount(input.totalPurchases, "totalPurchases");
   const capitalPurchases = toAmount(input.capitalPurchases, "capitalPurchases");
-  const nonCreditablePurchases = toAmount(input.nonCreditablePurchases, "nonCreditablePurchases");
-  const creditableAcquisitions = Math.max(0, totalPurchases - nonCreditablePurchases);
+  const nonCreditablePurchases = toAmount(
+    input.nonCreditablePurchases,
+    "nonCreditablePurchases"
+  );
+  const creditableAcquisitions = Math.max(
+    0,
+    totalPurchases - nonCreditablePurchases
+  );
 
   const gstOnSales = round2(taxableSales / divisor); // 1A
   const gstOnPurchases = round2(creditableAcquisitions / divisor); // 1B
@@ -88,27 +99,47 @@ function calculateBas(input = {}) {
   const fbtInstalment = toAmount(input.fbtInstalment, "fbtInstalment");
 
   const netGst = round2(gstOnSales - gstOnPurchases);
-  const netAmount = round2(netGst + paygWithheld + paygInstalment + fbtInstalment);
+  const netAmount = round2(
+    netGst + paygWithheld + paygInstalment + fbtInstalment
+  );
 
   return {
     calculator: "business-activity-statement",
     financialYear: rates.financialYear,
-    accountingBasis: toBool(input.cashBasis, false) ? "cash" : "accruals (non-cash)",
+    accountingBasis: toBool(input.cashBasis, false)
+      ? "cash"
+      : "accruals (non-cash)",
     labels: {
       G1: { label: "Total sales (GST inclusive)", amount: round2(totalSales) },
       G2: { label: "Export sales", amount: round2(exportSales) },
       G3: { label: "Other GST-free sales", amount: round2(gstFreeSales) },
-      G10: { label: "Capital purchases (GST inclusive)", amount: round2(capitalPurchases) },
-      G11: { label: "Non-capital purchases (GST inclusive)", amount: round2(totalPurchases - capitalPurchases) },
+      G10: {
+        label: "Capital purchases (GST inclusive)",
+        amount: round2(capitalPurchases),
+      },
+      G11: {
+        label: "Non-capital purchases (GST inclusive)",
+        amount: round2(totalPurchases - capitalPurchases),
+      },
       "1A": { label: "GST on sales", amount: gstOnSales },
       "1B": { label: "GST on purchases", amount: gstOnPurchases },
-      W1: { label: "Total salary, wages and other payments", amount: round2(toAmount(input.wagesPaid, "wagesPaid")) },
-      W2: { label: "Amounts withheld from payments at W1", amount: round2(paygWithheld) },
-      T7: { label: "PAYG income tax instalment", amount: round2(paygInstalment) },
+      W1: {
+        label: "Total salary, wages and other payments",
+        amount: round2(toAmount(input.wagesPaid, "wagesPaid")),
+      },
+      W2: {
+        label: "Amounts withheld from payments at W1",
+        amount: round2(paygWithheld),
+      },
+      T7: {
+        label: "PAYG income tax instalment",
+        amount: round2(paygInstalment),
+      },
       F1: { label: "FBT instalment", amount: round2(fbtInstalment) },
     },
     netGst,
-    netGstPosition: netGst >= 0 ? "payable to the ATO" : "refundable from the ATO",
+    netGstPosition:
+      netGst >= 0 ? "payable to the ATO" : "refundable from the ATO",
     totalAmountPayableOrRefundable: netAmount,
     summary:
       netAmount >= 0

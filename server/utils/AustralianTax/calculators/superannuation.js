@@ -2,7 +2,13 @@
  * Superannuation guarantee, contribution caps, Division 293 and SMSF tax.
  */
 const { ratesFor, normalizeFinancialYear } = require("../data");
-const { round2, toAmount, toBool, collectCaveats, DISCLAIMER } = require("./helpers");
+const {
+  round2,
+  toAmount,
+  toBool,
+  collectCaveats,
+  DISCLAIMER,
+} = require("./helpers");
 
 /**
  * Superannuation guarantee on ordinary time earnings.
@@ -60,9 +66,18 @@ function calculateContributionCaps(input = {}) {
   const rates = ratesFor(normalizeFinancialYear(input.financialYear));
   const cfg = rates.superannuation;
 
-  const concessional = toAmount(input.concessionalContributions, "concessionalContributions");
-  const nonConcessional = toAmount(input.nonConcessionalContributions, "nonConcessionalContributions");
-  const totalSuperBalance = toAmount(input.totalSuperBalanceAt30June, "totalSuperBalanceAt30June");
+  const concessional = toAmount(
+    input.concessionalContributions,
+    "concessionalContributions"
+  );
+  const nonConcessional = toAmount(
+    input.nonConcessionalContributions,
+    "nonConcessionalContributions"
+  );
+  const totalSuperBalance = toAmount(
+    input.totalSuperBalanceAt30June,
+    "totalSuperBalanceAt30June"
+  );
   const carriedForward = toAmount(
     input.unusedConcessionalCapCarriedForward,
     "unusedConcessionalCapCarriedForward"
@@ -71,9 +86,13 @@ function calculateContributionCaps(input = {}) {
 
   // Carry-forward is only available where the prior 30 June total super balance
   // is under $500,000.
-  const carryForwardAvailable = totalSuperBalance < cfg.carryForwardConcessionalTSBLimit;
-  const effectiveConcessionalCap = cfg.concessionalCap + (carryForwardAvailable ? carriedForward : 0);
-  const concessionalExcess = round2(Math.max(0, concessional - effectiveConcessionalCap));
+  const carryForwardAvailable =
+    totalSuperBalance < cfg.carryForwardConcessionalTSBLimit;
+  const effectiveConcessionalCap =
+    cfg.concessionalCap + (carryForwardAvailable ? carriedForward : 0);
+  const concessionalExcess = round2(
+    Math.max(0, concessional - effectiveConcessionalCap)
+  );
 
   // Non-concessional cap is nil once the total super balance reaches the cap.
   let ncCap;
@@ -81,13 +100,15 @@ function calculateContributionCaps(input = {}) {
   if (totalSuperBalance >= cfg.totalSuperBalanceThresholdForNCC) {
     ncCap = 0;
   } else if (
-    totalSuperBalance < cfg.totalSuperBalanceThresholdForNCC - cfg.bringForwardCap &&
+    totalSuperBalance <
+      cfg.totalSuperBalanceThresholdForNCC - cfg.bringForwardCap &&
     age < 75
   ) {
     ncCap = cfg.bringForwardCap;
     bringForwardYears = 3;
   } else if (
-    totalSuperBalance < cfg.totalSuperBalanceThresholdForNCC - cfg.nonConcessionalCap &&
+    totalSuperBalance <
+      cfg.totalSuperBalanceThresholdForNCC - cfg.nonConcessionalCap &&
     age < 75
   ) {
     ncCap = cfg.nonConcessionalCap * 2;
@@ -101,7 +122,10 @@ function calculateContributionCaps(input = {}) {
   const income = toAmount(input.income, "income");
   const div293Income = income + Math.min(concessional, cfg.concessionalCap);
   const div293Excess = Math.max(0, div293Income - cfg.division293Threshold);
-  const div293Base = Math.min(div293Excess, Math.min(concessional, cfg.concessionalCap));
+  const div293Base = Math.min(
+    div293Excess,
+    Math.min(concessional, cfg.concessionalCap)
+  );
   const div293Tax = round2(div293Base * cfg.division293Rate);
 
   return {
@@ -181,23 +205,37 @@ function calculateSmsfTax(input = {}) {
   const nali = toAmount(input.nonArmsLengthIncome, "nonArmsLengthIncome");
   const ecpiPercent = Math.min(
     100,
-    Math.max(0, toAmount(input.exemptCurrentPensionIncomePercentage, "exemptCurrentPensionIncomePercentage"))
+    Math.max(
+      0,
+      toAmount(
+        input.exemptCurrentPensionIncomePercentage,
+        "exemptCurrentPensionIncomePercentage"
+      )
+    )
   );
 
-  const cgtDiscount = heldOver12Months ? round2(grossGains * cfg.cgtDiscount) : 0;
+  const cgtDiscount = heldOver12Months
+    ? round2(grossGains * cfg.cgtDiscount)
+    : 0;
   const netCapitalGain = round2(grossGains - cgtDiscount);
 
   // ECPI exempts a proportion of ordinary and statutory income (not contributions).
   const exemptProportion = ecpiPercent / 100;
   const assessableInvestmentIncome = round2(
-    (investmentIncome + netCapitalGain + frankingCredits) * (1 - exemptProportion)
+    (investmentIncome + netCapitalGain + frankingCredits) *
+      (1 - exemptProportion)
   );
   const exemptCurrentPensionIncome = round2(
     (investmentIncome + netCapitalGain + frankingCredits) * exemptProportion
   );
 
   const taxableIncome = round2(
-    Math.max(0, contributions + assessableInvestmentIncome - deductions * (1 - exemptProportion))
+    Math.max(
+      0,
+      contributions +
+        assessableInvestmentIncome -
+        deductions * (1 - exemptProportion)
+    )
   );
   const concessionalTax = round2(taxableIncome * cfg.accumulationRate);
   const naliTax = round2(nali * cfg.nonArmsLengthIncomeRate);
@@ -210,7 +248,8 @@ function calculateSmsfTax(input = {}) {
     rates: {
       accumulationRate: cfg.accumulationRate,
       cgtDiscount: cfg.cgtDiscount,
-      effectiveCgtRateOnDiscountedGains: round2(cfg.accumulationRate * (1 - cfg.cgtDiscount) * 100) / 100,
+      effectiveCgtRateOnDiscountedGains:
+        round2(cfg.accumulationRate * (1 - cfg.cgtDiscount) * 100) / 100,
       nonArmsLengthIncomeRate: cfg.nonArmsLengthIncomeRate,
     },
     contributionsIncome: round2(contributions),

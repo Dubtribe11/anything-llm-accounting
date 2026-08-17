@@ -1,12 +1,19 @@
 const prisma = require("../utils/prisma");
-const { ENTITY_TYPES, buildSystemPrompt } = require("../utils/AustralianTax/prompts");
+const {
+  ENTITY_TYPES,
+  buildSystemPrompt,
+} = require("../utils/AustralianTax/prompts");
 const {
   normalizeFinancialYear,
   lodgementFinancialYearOf,
 } = require("../utils/AustralianTax/data");
 
 const STATES = ["NSW", "VIC", "QLD", "SA", "WA", "TAS", "ACT", "NT"];
-const RESIDENCY_STATUSES = ["resident", "foreign-resident", "working-holiday-maker"];
+const RESIDENCY_STATUSES = [
+  "resident",
+  "foreign-resident",
+  "working-holiday-maker",
+];
 const GST_CYCLES = ["monthly", "quarterly", "annual", "not-registered"];
 const ACCOUNTING_BASES = ["cash", "accruals"];
 
@@ -64,7 +71,9 @@ const TaxProfile = {
     },
     financialYear: (value = null) => normalizeFinancialYear(value),
     state: (value = null) => {
-      const key = String(value ?? "").trim().toUpperCase();
+      const key = String(value ?? "")
+        .trim()
+        .toUpperCase();
       return STATES.includes(key) ? key : null;
     },
     residencyStatus: (value = null) => {
@@ -73,11 +82,15 @@ const TaxProfile = {
     },
     gstRegistered: (value = false) => TaxProfile.toBool(value),
     gstReportingCycle: (value = null) => {
-      const key = String(value ?? "").trim().toLowerCase();
+      const key = String(value ?? "")
+        .trim()
+        .toLowerCase();
       return GST_CYCLES.includes(key) ? key : null;
     },
     accountingBasis: (value = null) => {
-      const key = String(value ?? "").trim().toLowerCase();
+      const key = String(value ?? "")
+        .trim()
+        .toLowerCase();
       return ACCOUNTING_BASES.includes(key) ? key : null;
     },
     hasEmployees: (value = false) => TaxProfile.toBool(value),
@@ -139,7 +152,8 @@ const TaxProfile = {
    * @returns {Promise<{profile: object|null, error: string|null}>}
    */
   upsert: async function (workspaceId = null, updates = {}) {
-    if (!workspaceId) return { profile: null, error: "No workspace id provided." };
+    if (!workspaceId)
+      return { profile: null, error: "No workspace id provided." };
     try {
       const data = this.sanitize(updates);
       const profile = await prisma.tax_profiles.upsert({
@@ -165,7 +179,9 @@ const TaxProfile = {
   delete: async function (workspaceId = null) {
     if (!workspaceId) return false;
     try {
-      await prisma.tax_profiles.delete({ where: { workspace_id: Number(workspaceId) } });
+      await prisma.tax_profiles.delete({
+        where: { workspace_id: Number(workspaceId) },
+      });
       return true;
     } catch (error) {
       console.error("[TaxProfile] delete:", error.message);
@@ -193,7 +209,9 @@ const TaxProfile = {
   all: async function () {
     try {
       return await prisma.tax_profiles.findMany({
-        include: { workspace: { select: { id: true, name: true, slug: true } } },
+        include: {
+          workspace: { select: { id: true, name: true, slug: true } },
+        },
         orderBy: { entityType: "asc" },
       });
     } catch (error) {
@@ -254,7 +272,11 @@ const TaxProfile = {
     const sum = digits
       .split("")
       .map(Number)
-      .reduce((total, digit, index) => total + (index === 0 ? digit - 1 : digit) * weights[index], 0);
+      .reduce(
+        (total, digit, index) =>
+          total + (index === 0 ? digit - 1 : digit) * weights[index],
+        0
+      );
     return sum % 89 === 0;
   },
 

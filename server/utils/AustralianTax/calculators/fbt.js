@@ -3,7 +3,13 @@
  * line up with the income year.
  */
 const { ratesFor, normalizeFinancialYear } = require("../data");
-const { round2, toAmount, toBool, collectCaveats, DISCLAIMER } = require("./helpers");
+const {
+  round2,
+  toAmount,
+  toBool,
+  collectCaveats,
+  DISCLAIMER,
+} = require("./helpers");
 
 /**
  * @param {object} input
@@ -82,17 +88,31 @@ function calculateCarFringeBenefit(input = {}) {
     input.daysAvailable === undefined || input.daysAvailable === null
       ? 365
       : toAmount(input.daysAvailable, "daysAvailable");
-  const employeeContributions = toAmount(input.employeeContributions, "employeeContributions");
-  const totalOperatingCosts = toAmount(input.totalOperatingCosts, "totalOperatingCosts");
-  const businessUsePercentage = toAmount(input.businessUsePercentage, "businessUsePercentage");
+  const employeeContributions = toAmount(
+    input.employeeContributions,
+    "employeeContributions"
+  );
+  const totalOperatingCosts = toAmount(
+    input.totalOperatingCosts,
+    "totalOperatingCosts"
+  );
+  const businessUsePercentage = toAmount(
+    input.businessUsePercentage,
+    "businessUsePercentage"
+  );
 
   const statutoryValue = round2(
-    Math.max(0, baseValue * cfg.statutoryFormulaRate * (daysAvailable / 365) - employeeContributions)
+    Math.max(
+      0,
+      baseValue * cfg.statutoryFormulaRate * (daysAvailable / 365) -
+        employeeContributions
+    )
   );
   const operatingCostValue = round2(
     Math.max(
       0,
-      totalOperatingCosts * (1 - businessUsePercentage / 100) - employeeContributions
+      totalOperatingCosts * (1 - businessUsePercentage / 100) -
+        employeeContributions
     )
   );
 
@@ -105,7 +125,8 @@ function calculateCarFringeBenefit(input = {}) {
           ? "statutory"
           : "operating-cost";
 
-  const taxableValue = method === "statutory" ? statutoryValue : operatingCostValue;
+  const taxableValue =
+    method === "statutory" ? statutoryValue : operatingCostValue;
   const exempt = toBool(input.isExemptElectricVehicle, false);
 
   return {
@@ -113,14 +134,16 @@ function calculateCarFringeBenefit(input = {}) {
     fbtYear: cfg.yearLabel,
     methodUsed: method,
     statutoryFormula: {
-      formula: "Base value x 20% x (days available / 365) - employee contributions",
+      formula:
+        "Base value x 20% x (days available / 365) - employee contributions",
       baseValue: round2(baseValue),
       statutoryRate: cfg.statutoryFormulaRate,
       daysAvailable,
       taxableValue: statutoryValue,
     },
     operatingCost: {
-      formula: "(Total operating costs x private use %) - employee contributions",
+      formula:
+        "(Total operating costs x private use %) - employee contributions",
       totalOperatingCosts: round2(totalOperatingCosts),
       businessUsePercentage,
       taxableValue: operatingCostValue,

@@ -13,7 +13,8 @@ const OBLIGATIONS = [
     obligation: "Quarterly BAS - September quarter",
     entityTypes: ["all"],
     dueDate: "28 October",
-    agentConcession: "25 November when lodged electronically through a registered agent",
+    agentConcession:
+      "25 November when lodged electronically through a registered agent",
   },
   {
     obligation: "Quarterly BAS - December quarter",
@@ -25,13 +26,15 @@ const OBLIGATIONS = [
     obligation: "Quarterly BAS - March quarter",
     entityTypes: ["all"],
     dueDate: "28 April",
-    agentConcession: "26 May when lodged electronically through a registered agent",
+    agentConcession:
+      "26 May when lodged electronically through a registered agent",
   },
   {
     obligation: "Quarterly BAS - June quarter",
     entityTypes: ["all"],
     dueDate: "28 July",
-    agentConcession: "25 August when lodged electronically through a registered agent",
+    agentConcession:
+      "25 August when lodged electronically through a registered agent",
   },
   {
     obligation: "Monthly BAS / IAS",
@@ -41,13 +44,15 @@ const OBLIGATIONS = [
   {
     obligation: "Superannuation guarantee contributions",
     entityTypes: ["employer"],
-    dueDate: "28 days after the end of each quarter (28 Oct, 28 Jan, 28 Apr, 28 Jul)",
+    dueDate:
+      "28 days after the end of each quarter (28 Oct, 28 Jan, 28 Apr, 28 Jul)",
     note: "Late payment triggers the superannuation guarantee charge, which is not deductible. Payday Super is legislated to change this from 1 July 2026 - confirm the commencement rules.",
   },
   {
     obligation: "Superannuation guarantee charge statement",
     entityTypes: ["employer"],
-    dueDate: "28 days after the SG due date (i.e. 28 Nov, 28 Feb, 28 May, 28 Aug)",
+    dueDate:
+      "28 days after the SG due date (i.e. 28 Nov, 28 Feb, 28 May, 28 Aug)",
   },
   {
     obligation: "Single Touch Payroll finalisation declaration",
@@ -70,7 +75,8 @@ const OBLIGATIONS = [
     obligation: "FBT return and payment",
     entityTypes: ["employer"],
     dueDate: "21 May",
-    agentConcession: "25 June when lodged electronically through a registered agent",
+    agentConcession:
+      "25 June when lodged electronically through a registered agent",
     note: "The FBT year ends 31 March.",
   },
   {
@@ -85,7 +91,8 @@ const OBLIGATIONS = [
     dueDate: "30 June",
   },
   {
-    obligation: "Division 7A written loan agreement (for a loan made in the year)",
+    obligation:
+      "Division 7A written loan agreement (for a loan made in the year)",
     entityTypes: ["company"],
     dueDate: "The company's lodgment day for that income year",
   },
@@ -99,19 +106,22 @@ const OBLIGATIONS = [
   {
     obligation: "Company / trust / partnership income tax return",
     entityTypes: ["company", "trust", "partnership"],
-    dueDate: "28 February (new registrants and large/medium taxpayers) or 15 May via a tax agent",
+    dueDate:
+      "28 February (new registrants and large/medium taxpayers) or 15 May via a tax agent",
     note: "The exact date depends on the entity's prior-year lodgment status and taxable income - check the ATO lodgment program.",
   },
   {
     obligation: "SMSF annual return",
     entityTypes: ["smsf"],
-    dueDate: "28 February for newly registered funds, otherwise 15 May via a tax agent",
+    dueDate:
+      "28 February for newly registered funds, otherwise 15 May via a tax agent",
     note: "The fund must be audited by an approved SMSF auditor before the return is lodged.",
   },
   {
     obligation: "Personal deductible super contribution - notice of intent",
     entityTypes: ["individual"],
-    dueDate: "Before the income tax return is lodged, or by 30 June of the following year (whichever is earlier)",
+    dueDate:
+      "Before the income tax return is lodged, or by 30 June of the following year (whichever is earlier)",
   },
   {
     obligation: "Annual GST return (for annual reporters)",
@@ -128,11 +138,14 @@ const OBLIGATIONS = [
 function lodgmentCalendar(input = {}) {
   const financialYear =
     normalizeFinancialYear(input.financialYear) ?? lodgementFinancialYearOf();
-  const entityType = String(input.entityType ?? "").trim().toLowerCase();
+  const entityType = String(input.entityType ?? "")
+    .trim()
+    .toLowerCase();
 
   const obligations = entityType
     ? OBLIGATIONS.filter(
-        (o) => o.entityTypes.includes("all") || o.entityTypes.includes(entityType)
+        (o) =>
+          o.entityTypes.includes("all") || o.entityTypes.includes(entityType)
       )
     : OBLIGATIONS;
 
