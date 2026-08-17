@@ -9,8 +9,12 @@
 > that carries across them, and a Vercel deployment path. OpenRouter is
 > supported for chat, embeddings and image generation.
 >
-> **Start here: [AUSTRALIAN_TAX.md](./AUSTRALIAN_TAX.md)** · Hosting on Vercel:
-> [VERCEL.md](./VERCEL.md)
+> **Deploy it: [DEPLOYMENT.md](./DEPLOYMENT.md)** — `cp .env.example .env &&
+> docker compose up -d --build`, or one-file configs for Railway, Fly.io and
+> Render.
+>
+> **What it does: [AUSTRALIAN_TAX.md](./AUSTRALIAN_TAX.md)** · Reduced serverless
+> path: [VERCEL.md](./VERCEL.md)
 >
 > Everything below is the upstream AnythingLLM README and still applies.
 

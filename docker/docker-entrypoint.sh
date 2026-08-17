@@ -22,6 +22,13 @@ fi
     export CHECKPOINT_DISABLE=1 &&
     npx prisma generate --schema=./prisma/schema.prisma &&
     npx prisma migrate deploy --schema=./prisma/schema.prisma &&
+    # First-boot Australian tax setup: creates a workspace per entity type and
+    # turns on memory. Idempotent - it leaves an instance that already has
+    # workspaces alone. Set AU_TAX_AUTOSEED=false to skip it.
+    if [ "${AU_TAX_AUTOSEED:-true}" = "true" ]; then
+      node /app/server/scripts/seed-tax-profiles.js || \
+        echo "[tax-seed] Seeding failed - the app will still start. Run 'yarn tax:seed' inside the container to retry."
+    fi &&
     node /app/server/index.js
 } &
 { node /app/collector/index.js; } &

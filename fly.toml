@@ -1,0 +1,64 @@
+# Fly.io deployment for the Australian tax accounting build.
+#
+#   fly launch --no-deploy --copy-config --name <your-app-name>
+#   fly volumes create anythingllm_storage --size 10 --region syd
+#   fly secrets set JWT_SECRET=$(openssl rand -hex 32) \
+#                   SIG_KEY=$(openssl rand -hex 32) \
+#                   SIG_SALT=$(openssl rand -hex 32) \
+#                   OPENROUTER_API_KEY=sk-or-v1-...
+#   fly deploy
+#
+# Full features: a persistent volume, a long-running process and websockets, so
+# agents, background jobs, document upload and the local vector store all work.
+
+app = "anythingllm-autax"
+primary_region = "syd"          # Sydney - closest to Australian users
+
+[build]
+  dockerfile = "docker/Dockerfile"
+
+[env]
+  STORAGE_DIR = "/app/server/storage"
+  SERVER_PORT = "3001"
+  # First boot creates a workspace per entity type with a tax profile attached.
+  AU_TAX_AUTOSEED = "true"
+  DISABLE_TELEMETRY = "true"
+  LLM_PROVIDER = "openrouter"
+  OPENROUTER_MODEL_PREF = "anthropic/claude-sonnet-4.5"
+  # Runs in-container, no API key, nothing leaves the machine to be embedded.
+  EMBEDDING_ENGINE = "native"
+  VECTOR_DB = "lancedb"
+
+# The database, documents, vectors and encryption keys all live here.
+[[mounts]]
+  source = "anythingllm_storage"
+  destination = "/app/server/storage"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  # Do NOT let Fly stop the machine: background jobs and the document collector
+  # need the process to stay up, and a cold start loses in-flight agent sessions.
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 40
+    hard_limit = 80
+
+[[vm]]
+  # The native embedder and document processing are memory hungry - 2GB is the
+  # practical floor. Drop to 1GB only if you use an API-based embedder.
+  memory = "2gb"
+  cpu_kind = "shared"
+  cpus = 2
+
+[checks.health]
+  type = "http"
+  port = 3001
+  path = "/api/ping"
+  interval = "30s"
+  timeout = "10s"
+  grace_period = "120s"

@@ -138,7 +138,22 @@ key. `OPENROUTER_TIMEOUT_MS` raises the per-request timeout for slow models.
 
 ---
 
-## 4. Hosting on Vercel
+## 4. Hosting
+
+**[DEPLOYMENT.md](./DEPLOYMENT.md) is the full-featured path** — Docker Compose
+on your own machine or a VPS, or Railway, Fly.io or Render. Everything works
+there: agents, websockets, background jobs, document upload, the local vector
+store and multi-user.
+
+```bash
+cp .env.example .env      # paste your OpenRouter key and three secrets
+docker compose up -d --build
+```
+
+First boot creates a workspace per entity type with a tax profile attached and
+turns on memory, so the instance comes up ready to use.
+
+### The serverless alternative
 
 See **[VERCEL.md](./VERCEL.md)** for the full guide, the environment checklist
 in [`.env.vercel.example`](./.env.vercel.example), and — importantly — the
@@ -152,20 +167,20 @@ chat-and-calculate experience without running a server.
 
 ---
 
-## Getting started locally
+## Developing locally
 
 ```bash
 yarn setup                 # installs deps, copies .env files, sets up the database
 # edit server/.env.development - set LLM_PROVIDER, OPENROUTER_API_KEY, EMBEDDING_ENGINE
+yarn tax:seed              # create the default entity profiles
 yarn dev                   # server, frontend and collector together
 ```
 
-Then:
+Then open **Workspace Settings → Tax Profile** on any workspace, fill in the
+entity details, and ask it something — it will call the calculators rather than
+guessing.
 
-1. Create a workspace named for the entity ("Smith Family Trust").
-2. Open **Workspace Settings → Tax Profile**, pick the entity type, fill in what
-   you know, and save.
-3. Ask it something. It will call the calculators rather than guessing.
+To deploy rather than develop, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ---
 
