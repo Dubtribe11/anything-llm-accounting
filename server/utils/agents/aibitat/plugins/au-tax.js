@@ -1,6 +1,3 @@
-const { safeJsonParse } = require("../../../http");
-const AustralianTax = require("../../../AustralianTax");
-
 /**
  * Australian tax skill.
  *
@@ -9,10 +6,13 @@ const AustralianTax = require("../../../AustralianTax");
  * and payroll tax are *computed* against bundled rate tables rather than
  * recalled from the model's training data.
  *
- * Two tools rather than one per calculator: the registry has ~19 entries and
- * shipping 19 tool definitions crowds out the rest of the agent's toolset. The
- * agent lists the calculators it can reach, then calls one by name.
+ * Two tools rather than one per calculator: the registry has twenty entries,
+ * and shipping twenty tool definitions would crowd out the rest of the agent's
+ * toolset. The agent lists the calculators it can reach, then calls one by name.
  */
+const { safeJsonParse } = require("../../../http");
+const AustralianTax = require("../../../AustralianTax");
+
 /**
  * Checks a parsed argument object against a calculator's schema.
  *
