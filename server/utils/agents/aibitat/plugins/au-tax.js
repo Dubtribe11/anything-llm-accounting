@@ -13,6 +13,44 @@ const AustralianTax = require("../../../AustralianTax");
  * shipping 19 tool definitions crowds out the rest of the agent's toolset. The
  * agent lists the calculators it can reach, then calls one by name.
  */
+/**
+ * Checks a parsed argument object against a calculator's schema.
+ *
+ * `safeJsonParse` is lenient - it salvages malformed JSON rather than failing,
+ * so `"{not json"` comes back as `{ "not json": null }`. Left unchecked that
+ * would run the calculator on an empty input and return a confident $0, which
+ * is the worst possible failure mode for a tax figure. Requiring at least one
+ * recognised key turns garbage into a visible error the model can retry from.
+ *
+ * @param {any} parsed
+ * @param {{parameters: object, required?: string[]}} entry - the registry entry
+ * @returns {string|null} the problem, or null when the arguments are usable
+ */
+function validateArgs(parsed, entry) {
+  if (parsed === null || parsed === undefined)
+    return "The `args` value could not be read as JSON.";
+  if (typeof parsed !== "object" || Array.isArray(parsed))
+    return "`args` must be a JSON object, not an array or a bare value.";
+
+  const missing = (entry.parameters?.required ?? []).filter(
+    (key) => parsed[key] === undefined || parsed[key] === null
+  );
+  if (missing.length > 0)
+    return `Missing required argument(s): ${missing.join(", ")}.`;
+
+  const known = Object.keys(entry.parameters?.properties ?? {});
+  const supplied = Object.keys(parsed);
+  // No arguments at all is legitimate for a calculator with nothing required -
+  // lodgment_calendar and tax_rates_lookup are happy with their defaults.
+  if (supplied.length === 0) return null;
+
+  const recognised = supplied.filter((key) => known.includes(key));
+  if (recognised.length === 0)
+    return `None of the supplied arguments (${supplied.join(", ")}) are accepted by this calculator. Expected any of: ${known.join(", ")}.`;
+
+  return null;
+}
+
 const auTax = {
   name: "australian-tax",
   startupConfig: {
@@ -99,13 +137,16 @@ const auTax = {
                   : safeJsonParse(args, null);
               if (typeof parsed === "string")
                 parsed = safeJsonParse(parsed, null);
-              if (parsed === null) {
+
+              const problem = validateArgs(parsed, entry);
+              if (problem) {
                 this.super.introspect(
-                  `${this.caller}: could not parse the arguments for ${calculator}.`
+                  `${this.caller}: the arguments for ${calculator} were not usable - ${problem}`
                 );
                 return JSON.stringify({
-                  error: "The `args` value was not valid JSON.",
+                  error: problem,
                   expectedSchema: entry.parameters,
+                  hint: "Send `args` as a JSON object matching the schema above.",
                 });
               }
 
